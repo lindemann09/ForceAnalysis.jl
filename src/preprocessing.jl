@@ -121,7 +121,7 @@ function aggregate_force_profiles(fp::ForceProfiles; dv::Symbol,
 end;
 
 
-### helper
+### helper functions
 function _find_larger_or_equal(needle::T, sorted_array::AbstractVector{T}) where T<:Real
     cnt::UInt64 = 0
     for x in sorted_array
