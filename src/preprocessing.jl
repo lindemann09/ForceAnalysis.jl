@@ -51,7 +51,8 @@ function force_data_preprocess(;
     #baseline adjustment
     bsl = row_mean(force_mtx[:, baseline_sample_range]);
     force_mtx = force_mtx .- bsl
-    return ForceProfiles(force_mtx, DataFrame(), bsl, n_samples_before+1)
+    rtn = ForceProfiles(force_mtx, DataFrame(), bsl, n_samples_before+1)
+    return rtn
 end;
 
 function peak_difference(force_mtx::Matrix{<:FloatOrMissing};
@@ -92,14 +93,15 @@ function profile_parameter(
         peak_differences = peak_difference(force_profile_matrix;
                                     window_size=max_diff_windows_size))
 
-    df.good_trial = df.min.>force_range.start .&&
+    tmp = df.min.>force_range.start .&&
                     df.max.<force_range.stop .&&
                     abs.(df.peak_differences) .< max_difference
+    df.good_trial = convert(Vector{Bool}, tmp) # TODO
     return df
 end;
 
 
-function aggregate_force_profiles(fp::ForceProfiles; dv::Symbol,
+function aggregate(fp::ForceProfiles; dv::Symbol,
                         var_sub_id = :subject_id,
                         var_row = :row)
     # aggregate per subject
@@ -117,9 +119,35 @@ function aggregate_force_profiles(fp::ForceProfiles; dv::Symbol,
         end
     end;
     #agg_df.row = 1:nrow(agg_df)
-    return ForceProfiles(agg_forces, agg_df, Float64[],  fp.zero_sample)
+    return ForceProfiles(agg_forces, agg_df, eltype(agg_forces)[],  fp.zero_sample)
 end;
 
+
+function aggregate(aggregate_fnc::Function, fp::ForceProfiles,
+                    grouped_design::GroupedDataFrame; var_row = :row)
+    # aggregate per subject
+    agg_forces = Matrix{Float64}(undef, 0, size(fp.force, 2))
+    agg_df = DataFrame()
+    cols = groupcols(grouped_design)
+    for sub_df in grouped_design
+        append!(agg_df, DataFrame(sub_df[1, cols]))
+        rows = sub_df[:, var_row]
+        m = aggregate_fnc(fp.force[rows, :])
+        agg_forces = vcat(agg_forces, transpose(m)) # TODO hcat transpose later?
+    end
+    return ForceProfiles(agg_forces, agg_df, eltype(agg_forces)[],  fp.zero_sample)
+end;
+
+aggregate(fp::ForceProfiles, grouped_design::GroupedDataFrame; var_row = :row) =
+    aggregate(column_mean, fp, grouped_design; var_row)
+
+
+function subset(fp::ForceProfiles, subset_design::DataFrame)
+    i = subset_design.row
+    mtx = fp.force[i,:]
+    subset_design.row = 1:nrow(subset_design) # renumber
+    return ForceProfiles(mtx, subset_design, eltype(mtx)[], fp.zero_sample)
+end
 
 ### helper functions
 function _find_larger_or_equal(needle::T, sorted_array::AbstractVector{T}) where T<:Real

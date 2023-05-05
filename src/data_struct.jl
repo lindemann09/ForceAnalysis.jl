@@ -10,7 +10,7 @@ end;
 mutable struct ForceProfiles{T<:FloatOrMissing}
     const force::AbstractMatrix{T}
     design ::DataFrame
-    const baseline::AbstractVector{T}
+    const baseline::AbstractVector{AbstractFloat}
     const zero_sample::Integer
 end;
 

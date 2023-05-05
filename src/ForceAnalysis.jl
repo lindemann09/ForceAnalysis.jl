@@ -8,6 +8,7 @@ using DSP # signal processing, filtering
 
 import Base.copy
 import DataAPI.ncol
+import DataFrames: subset, aggregate
 
 export ForceExpData,
         ForceProfiles,
@@ -20,7 +21,8 @@ export ForceExpData,
         force_profile_matrix,
         force_data_preprocess,
         profile_parameter,
-        aggregate_force_profiles,
+        aggregate,
+        subset,
         #stats missings
         FloatOrMissing,
         randFloatOrMissing,
