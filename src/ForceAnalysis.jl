@@ -23,7 +23,7 @@ export ForceExpData,
         profile_parameter,
         aggregate,
         subset,
-        #stats missings
+        #stats missings,
         Float64OrMissing,
         randFloatOrMissing,
         z_transform,
