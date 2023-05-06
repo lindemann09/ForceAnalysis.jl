@@ -7,10 +7,10 @@ struct ForceExpData
     udp::DataFrame
 end;
 
-mutable struct ForceProfiles
-    const force::AbstractMatrix{<:Float64OrMissing}
+mutable struct ForceProfiles{T<:Float64OrMissing}
+    const force::AbstractMatrix{T}
     design ::DataFrame
-    const baseline::AbstractVector{<:Float64OrMissing}
+    const baseline::AbstractVector{T}
     const zero_sample::Integer
 end;
 
