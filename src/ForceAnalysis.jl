@@ -24,7 +24,7 @@ export ForceExpData,
         aggregate,
         subset,
         #stats missings
-        FloatOrMissing,
+        Float64OrMissing,
         randFloatOrMissing,
         z_transform,
         eachcol_select_rows,
