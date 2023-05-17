@@ -1,7 +1,7 @@
 function lowpass_filter(force_data::AbstractVector{T};
                     sampling_rate::Integer=1000,
                     cutoff_feq::Integer= 15,
-                    butterworth_order::Integer = 4) where T<:Float64OrMissing
+                    butterworth_order::Integer = 4) where T<:FloatOrMissing
     responsetype = Lowpass(cutoff_feq, fs=sampling_rate)
     myfilter = digitalfilter(responsetype, Butterworth(butterworth_order))
     return filtfilt(myfilter, force_data .- force_data[1]) .+ force_data[1]  # filter centered data
@@ -11,14 +11,14 @@ function force_profile_matrix(;force::AbstractVector{T},
                     time_stamps::AbstractVector{<:Integer},
                     zero_times::AbstractVector{<:Integer},
                     n_samples::Integer,
-                    n_samples_before::Integer) where {T<:Float64OrMissing}
+                    n_samples_before::Integer) where {T<:FloatOrMissing}
 
     len_force = length(force)
     if length(time_stamps) != len_force
         throw(error("forces and times_stamps have to have the same length"))
     end
     nrow = length(zero_times)
-    rtn = Matrix{Float64OrMissing}(missing, nrow, n_samples_before + n_samples)
+    rtn = Matrix{FloatOrMissing}(missing, nrow, n_samples_before + n_samples)
     for r in 1:nrow
         i = _find_larger_or_equal(zero_times[r], time_stamps)
         if i !== nothing
@@ -45,7 +45,7 @@ function force_data_preprocess(;
                     baseline_sample_range::UnitRange{<:Integer},
                     scale_forces::AbstractFloat = 1,
                     filter_cutoff_feq::Integer = 15,
-                    butterworth_order::Integer = 4) where T<:Float64OrMissing
+                    butterworth_order::Integer = 4) where T<:FloatOrMissing
     ## convenience function
     force = lowpass_filter(force;
             sampling_rate = sampling_rate,
@@ -63,11 +63,11 @@ function force_data_preprocess(;
     return rtn
 end;
 
-function peak_difference(force_mtx::Matrix{<:Float64OrMissing};
+function peak_difference(force_mtx::Matrix{<:FloatOrMissing};
                             window_size::Integer = 100)
     # peak difference per row
     (nr, nc) = size(force_mtx)
-    peak = Vector{Float64OrMissing}(missing, nr)
+    peak = Vector{FloatOrMissing}(missing, nr)
     for r in 1:nr
         for i in 1:nc-window_size
             diff = abs(force_mtx[r, i+window_size] - force_mtx[r, i])
@@ -90,7 +90,7 @@ function profile_parameter(force_profiles::ForceProfiles;
 end;
 
 function profile_parameter(
-                force_profile_matrix::Matrix{<:Float64OrMissing};
+                force_profile_matrix::Matrix{<:FloatOrMissing};
                 force_range::UnitRange = -400:400,# criteria for good trial
                 max_difference = 200, # criteria for good trial
                 max_diff_windows_size = 100)
@@ -109,45 +109,47 @@ function profile_parameter(
 end;
 
 
-function aggregate(fp::ForceProfiles; dv::Symbol,
-                        var_sub_id = :subject_id,
-                        var_row = :row)
+function aggregate(fp::ForceProfiles; iv::Symbol,
+                        subject_id = :subject_id,
+                        row_column = :row,
+                        agg_fnc= column_mean)
     # aggregate per subject
     agg_forces = Matrix{Float64}(undef, 0, size(fp.force, 2))
-    agg_df = DataFrame()
+    rtn = Dict(iv => [], subject_id=>[])
     design = fp.design
-    for sid in unique(design[:, var_sub_id])
-        for condition in unique(design[:, dv])
-            append!(agg_df, DataFrame(; condition, subject_id=sid))
-            ids = findall(design[:, var_sub_id] .== sid .&&
-                          design[:, dv] .== condition)
-            rows = design[ids, var_row]
-            m = column_mean(fp.force; rows)
+    for sid in unique(design[:, subject_id])
+        for condition in unique(design[:, iv])
+            append!(rtn[iv], condition)
+            append!(rtn[subject_id], sid)
+            ids = findall(design[:, subject_id] .== sid .&&
+                          design[:, iv] .== condition)
+            rows = design[ids, row_column]
+            m = agg_fnc(fp.force; rows) #<===============
             agg_forces = vcat(agg_forces, transpose(m))
         end
     end;
-    #agg_df.row = 1:nrow(agg_df)
-    return ForceProfiles(agg_forces, agg_df, eltype(agg_forces)[],  fp.zero_sample)
+    rtn[row_column] = 1:length(rtn[iv])
+    return ForceProfiles(agg_forces, DataFrame(rtn), eltype(agg_forces)[],  fp.zero_sample)
 end;
 
 
-function aggregate(aggregate_fnc::Function, fp::ForceProfiles,
-                    grouped_design::GroupedDataFrame; var_row = :row)
-    # aggregate per subject
-    agg_forces = Matrix{Float64}(undef, 0, size(fp.force, 2))
-    agg_df = DataFrame()
-    cols = groupcols(grouped_design)
-    for sub_df in grouped_design
-        append!(agg_df, DataFrame(sub_df[1, cols]))
-        rows = sub_df[:, var_row]
-        m = aggregate_fnc(fp.force[rows, :])
-        agg_forces = vcat(agg_forces, transpose(m)) # TODO hcat transpose later?
-    end
-    return ForceProfiles(agg_forces, agg_df, eltype(agg_forces)[],  fp.zero_sample)
-end;
+# function aggregate(aggregate_fnc::Function, fp::ForceProfiles,
+#                     grouped_design::GroupedDataFrame; var_row = :row)
+#     # aggregate per subject
+#     agg_forces = Matrix{Float64}(undef, 0, size(fp.force, 2))
+#     agg_df = DataFrame()
+#     cols = groupcols(grouped_design)
+#     for sub_df in grouped_design
+#         append!(agg_df, DataFrame(sub_df[1, cols]))
+#         rows = sub_df[:, var_row]
+#         m = aggregate_fnc(fp.force[rows, :])
+#         agg_forces = vcat(agg_forces, transpose(m)) # TODO hcat transpose later?
+#     end
+#     return ForceProfiles(agg_forces, agg_df, eltype(agg_forces)[],  fp.zero_sample)
+# end;
 
-aggregate(fp::ForceProfiles, grouped_design::GroupedDataFrame; var_row = :row) =
-    aggregate(column_mean, fp, grouped_design; var_row)
+# aggregate(fp::ForceProfiles, grouped_design::GroupedDataFrame; var_row = :row) =
+#     aggregate(column_mean, fp, grouped_design; var_row)
 
 
 function subset(fp::ForceProfiles, subset_design::DataFrame)
