@@ -100,7 +100,7 @@ function force(x::MultiForceData, id::Symbol)
 end
 
 function copy(fp::ForceProfiles)
-    return ForceProfiles(copy(fp.force), fp.sampling_rate, copy(fp.design),
+    return ForceProfiles(copy(fp.force), fp.sr, copy(fp.design),
         copy(fp.baseline), fp.zero_sample)
 end
 

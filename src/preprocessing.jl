@@ -123,21 +123,23 @@ function aggregate(
     fp::ForceProfiles;
     iv::Symbol,
     subject_id=:subject_id,
-    row_column=:row,
+    row_idx_column=:row,
     agg_fnc=column_mean
 )
     # aggregate per subject
     agg_forces = Matrix{Float64}(undef, 0, size(fp.force, 2))
     agg_baseline = Float64[]
-    rtn = Dict(iv => [], subject_id => [])
+    Tiv = eltype(fp.design[:, iv])
+    Tsid = eltype(fp.design[:, subject_id])
+    rtn = Dict(iv => Tiv[], subject_id => Tsid[])
     design = fp.design
     bsln = hcat(fp.baseline) # convert to nx1 matrix
     for sid in unique(design[:, subject_id])
         for condition in unique(design[:, iv])
-            append!(rtn[iv], condition)
-            append!(rtn[subject_id], sid)
+            push!(rtn[iv], condition)
+            push!(rtn[subject_id], sid)
             ids = findall(design[:, subject_id] .== sid .&& design[:, iv] .== condition)
-            rows = design[ids, row_column]
+            rows = design[ids, row_idx_column]
             m = agg_fnc(fp.force; rows) #<===============
             agg_forces = vcat(agg_forces, transpose(m))
             m = agg_fnc(bsln; rows) #<===============
@@ -145,7 +147,7 @@ function aggregate(
 
         end
     end
-    rtn[row_column] = 1:length(rtn[iv])
+    rtn[row_idx_column] = 1:length(rtn[iv])
     return ForceProfiles(
         agg_forces, fp.sr, DataFrame(rtn), agg_baseline, fp.zero_sample)
 end;
@@ -168,11 +170,12 @@ end;
 # aggregate(fp::ForceProfiles, grouped_design::GroupedDataFrame; var_row = :row) =
 #     aggregate(column_mean, fp, grouped_design; var_row)
 
-function subset(fp::ForceProfiles, subset_design::DataFrame)
-    i = subset_design.row
-    subset_design.row = 1:nrow(subset_design) # renumber
-    return ForceProfiles(fp.force[i, :], fp.sr, subset_design,
-                fp.baseline[i], fp.zero_sample)
+function subset(fp::ForceProfiles, subset_design::DataFrame; row_idx_column::String="row")
+    i = subset_design[:, row_idx_column]
+    force = fp.force[i, :]
+    bsln =  fp.baseline[i]
+    subset_design[:, row_idx_column] = 1:nrow(subset_design) # renumber
+    return ForceProfiles(force, fp.sr, subset_design, bsln, fp.zero_sample)
 end
 
 ### helper functions
