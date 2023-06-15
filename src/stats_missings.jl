@@ -1,6 +1,4 @@
 
-FloatOrMissing = Union{Missing, Float64}
-
 ## helper functions
 function randFloatOrMissing(size; percent_missings::AbstractFloat=0.1)
     rtn = convert(Matrix{FloatOrMissing},
