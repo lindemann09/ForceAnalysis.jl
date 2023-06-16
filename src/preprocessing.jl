@@ -1,8 +1,12 @@
+const ColumnIndex = Union{Symbol,AbstractString}
+# const MultiColumnIndex = Union{
+#     ColumnIndex, AbstractVector{<:ColumnIndex},Tuple{<:ColumnIndex}
+# }
 
 function lowpass_filter(dat::Vector{<:FloatOrMissing};
     sampling_rate::Integer,
     cutoff_feq::Integer,
-    butterworth_order::Integer
+    butterworth_order::Integer,
 )
     responsetype = Lowpass(cutoff_feq; fs=sampling_rate)
     myfilter = digitalfilter(responsetype, Butterworth(butterworth_order))
@@ -34,7 +38,7 @@ function force_profile_matrix(
     force_data::ForceData;
     zero_times::AbstractVector{<:Integer},
     n_samples::Integer,
-    n_samples_before::Integer
+    n_samples_before::Integer,
 )
     @unpack dat, ts = force_data
     len_force = length(dat)
@@ -49,7 +53,7 @@ function force_profile_matrix(
                 if to > len_force
                     to = len_force
                 end
-                rtn[r, 1:(to-from+1)] .= dat[from:to]
+                rtn[r, 1:(to - from + 1)] .= dat[from:to]
             end
         end
     end
@@ -63,11 +67,12 @@ function force_data_preprocess(force_data::ForceData;
     baseline_sample_range::UnitRange{<:Integer},
     scale_forces::AbstractFloat=1,
     filter_cutoff_feq::Integer=15,
-    butterworth_order::Integer=4
+    butterworth_order::Integer=4,
 )
     ## filter and scale data
-    flt = lowpass_filter(force_data.dat; sampling_rate=force_data.sr,
-        cutoff_feq=filter_cutoff_feq, butterworth_order) .* scale_forces
+    flt =
+        lowpass_filter(force_data.dat; sampling_rate=force_data.sr,
+            cutoff_feq=filter_cutoff_feq, butterworth_order) .* scale_forces
     tmp = ForceData(flt, force_data.ts, force_data.sr, force_data.meta)
     # extract force profile per trial
     force_mtx = force_profile_matrix(tmp;
@@ -80,14 +85,14 @@ function force_data_preprocess(force_data::ForceData;
 end;
 
 function peak_difference(force_mtx::Matrix{<:FloatOrMissing};
-    window_size::Integer=100
+    window_size::Integer=100,
 )
     # peak difference per row
     (nr, nc) = size(force_mtx)
     peak = Vector{FloatOrMissing}(missing, nr)
     for r in 1:nr
-        for i in 1:(nc-window_size)
-            diff = abs(force_mtx[r, i+window_size] - force_mtx[r, i])
+        for i in 1:(nc - window_size)
+            diff = abs(force_mtx[r, i + window_size] - force_mtx[r, i])
             if ismissing(peak[r])
                 peak[r] = diff
             elseif peak[r] < diff
@@ -101,7 +106,7 @@ end;
 function profile_parameter(fp::ForceProfiles;
     force_range::UnitRange=-400:400, # criteria for good trial
     max_difference=200, # criteria for good trial
-    max_diff_windows_size=100
+    max_diff_windows_size=100,
 )
     force_profile_matrix = force(fp)
     # force profile quality parameter
@@ -110,41 +115,54 @@ function profile_parameter(fp::ForceProfiles;
         min=min[:],
         max=max[:],
         peak_differences=peak_difference(force_profile_matrix;
-            window_size=max_diff_windows_size)
+            window_size=max_diff_windows_size),
     )
-    tmp = df.min .> force_range.start .&&
+    tmp =
+        df.min .> force_range.start .&&
         df.max .< force_range.stop .&&
         abs.(df.peak_differences) .< max_difference
     df.good_trial = convert(Vector{Bool}, tmp)
     return df
 end;
 
-function aggregate(
+function aggregate( # FIXME generate methods with multiple variables
     fp::ForceProfiles;
-    iv::Symbol,
-    subject_id=:subject_id,
+    iv::ColumnIndex,
+    subject_id::Union{Nothing,ColumnIndex}=nothing,
     row_idx_column=:row,
-    agg_fnc=column_mean
+    agg_fnc=column_mean,
 )
     # aggregate per subject
     agg_forces = Matrix{Float64}(undef, 0, size(fp.force, 2))
     agg_baseline = Float64[]
     Tiv = eltype(fp.design[:, iv])
-    Tsid = eltype(fp.design[:, subject_id])
-    rtn = Dict(iv => Tiv[], subject_id => Tsid[])
     design = fp.design
     bsln = hcat(fp.baseline) # convert to nx1 matrix
-    for sid in unique(design[:, subject_id])
+    if isnothing(subject_id)
+        rtn = Dict(iv => Tiv[])
         for condition in unique(design[:, iv])
             push!(rtn[iv], condition)
-            push!(rtn[subject_id], sid)
             ids = findall(design[:, subject_id] .== sid .&& design[:, iv] .== condition)
             rows = design[ids, row_idx_column]
             m = agg_fnc(fp.force; rows) #<===============
             agg_forces = vcat(agg_forces, transpose(m))
             m = agg_fnc(bsln; rows) #<===============
             append!(agg_baseline, m)
-
+        end
+    else
+        Tsid = eltype(fp.design[:, subject_id])
+        rtn = Dict(iv => Tiv[], subject_id => Tsid[])
+        for sid in unique(design[:, subject_id])
+            for condition in unique(design[:, iv])
+                push!(rtn[iv], condition)
+                push!(rtn[subject_id], sid)
+                ids = findall(design[:, subject_id] .== sid .&& design[:, iv] .== condition)
+                rows = design[ids, row_idx_column]
+                m = agg_fnc(fp.force; rows) #<===============
+                agg_forces = vcat(agg_forces, transpose(m))
+                m = agg_fnc(bsln; rows) #<===============
+                append!(agg_baseline, m)
+            end
         end
     end
     rtn[row_idx_column] = 1:length(rtn[iv])
@@ -173,9 +191,66 @@ end;
 function subset(fp::ForceProfiles, subset_design::DataFrame; row_idx_column::String="row")
     i = subset_design[:, row_idx_column]
     force = fp.force[i, :]
-    bsln =  fp.baseline[i]
+    bsln = fp.baseline[i]
     subset_design[:, row_idx_column] = 1:nrow(subset_design) # renumber
     return ForceProfiles(force, fp.sr, subset_design, bsln, fp.zero_sample)
+end
+
+function detect_force_onset(fp::ForceProfiles;
+    diff_threshold::Real, increase_criterion::Real, increase_window::Integer)
+    onsets = Int[]
+    for f in eachrow(fp.force)
+        fdiff = diff(f)
+        o = _detect_force_onset(f, fdiff;
+            diff_threshold, increase_criterion, increase_window)
+        if o > 0
+            o = o - fp.zero_sample
+        end
+        push!(onsets, o)
+    end
+    return onsets
+end
+
+function detect_force_onset(force_vector::AbstractVector{<:FloatOrMissing};
+    diff_threshold::Real, increase_criterion::Real, increase_window::Integer)::Integer
+
+    return _detect_force_onset(force_vector, diff(force_vector);
+        diff_threshold, increase_criterion, increase_window)
+end
+
+function _detect_force_onset(force_vector::AbstractVector{<:FloatOrMissing},
+    force_differences::AbstractVector{<:FloatOrMissing};
+    diff_threshold::Real, increase_criterion::Real, increase_window::Integer)::Integer
+    # helper function for onset detection, finds first onset
+    #
+    # detects if  difference threshold (current-previous) is exceeded and force has
+    # INCREASED after n trials for at least the increase_criterion
+    #
+    # returns sample of onset or -1
+
+    l = length(force_vector)
+    for (c, d) in enumerate(force_differences)
+        if !ismissing(d) && d > diff_threshold
+            x = c + 1 # first difference refers to second sample
+            last = x + increase_window
+            if last > l
+                last = l
+            end
+            crit = force_vector[x] + increase_criterion
+            for f in skipmissing(force_vector[(x + 1):last])
+                if f > crit
+                    return x
+                end
+            end
+        end
+    end
+    return -1
+end
+
+function _detect_force_onoff(force_vector::AbstractVector{<:FloatOrMissing},
+    force_differences::AbstractVector{<:FloatOrMissing};
+    decrease_criterion::Real, increase_window::Integer)::Integer
+    # TODO FIXME
 end
 
 ### helper functions

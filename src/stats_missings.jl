@@ -70,6 +70,12 @@ function column_minmax(x::Matrix{T}; rows=Int64[])  where T<:FloatOrMissing
     return (minx, maxx)
 end
 
+
+function column_diff(x::Matrix{T}) where T<:FloatOrMissing
+    m = fill(missing, size(x, 1), 1)
+    hcat(m, diff(x; dims=2))
+end;
+
 # rows wise
 
 function row_mean(x::Matrix{T}; cols=Int64[])  where T<:FloatOrMissing

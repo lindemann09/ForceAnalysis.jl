@@ -104,6 +104,25 @@ function copy(fp::ForceProfiles)
         copy(fp.baseline), fp.zero_sample)
 end
 
+
+function Base.show(io::IO, mime::MIME"text/plain", x::ForceData)
+    println(io, "ForceData")
+    print(io, " $(n_samples(x)) samples, sampling rate: $(sampling_rate(x))")
+end;
+
+function Base.show(io::IO, mime::MIME"text/plain", x::MultiForceData)
+    println(io, "MultiForceData")
+    print(io, "  $(n_samples(x)) samples, sampling rate: $(sampling_rate(x))")
+end;
+
+
+function Base.show(io::IO, mime::MIME"text/plain", x::ForceProfiles)
+    println(io, "ForceProfile")
+    println(io, "  $(n_profiles(x)) profiles")
+    println(io, "  $(n_samples(x)) samples, sampling rate: $(sampling_rate(x)), zero sample: $(x.zero_sample)")
+    print(io, "  Design: $(names(x.design))")
+end;
+
 # helper
 function check_timestamps(timestamps::Vector, required_length::Int)
     lt = length(timestamps)
