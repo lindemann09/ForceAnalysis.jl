@@ -8,7 +8,7 @@ using DataFrames
 import Base.copy
 import DataFrames: subset, aggregate
 
-export  FloatOrMissing,
+export FloatOrMissing,
     ForceData, # force data
     MultiForceData,
     ForceProfiles,
@@ -18,15 +18,25 @@ export  FloatOrMissing,
     n_samples,
     n_profiles,
     copy,
+    duration,
     # preprocessing
-    peak_difference,
     lowpass_filter,
     force_profile_matrix,
     force_data_preprocess,
+    # processing
+    peak_difference,
     profile_parameter,
     aggregate,
     subset,
-    detect_force_onset,
+    # response detection
+    OnsetCriterion,
+    ResponseBounds,
+    detect_responses,
+    response_onset,
+    response_offset,
+    peak_force,
+    impulse_size,
+    latency,
     #stats missings,
     randFloatOrMissing,
     z_transform,
@@ -44,11 +54,12 @@ export  FloatOrMissing,
     row_sum,
     row_var
 
-
-FloatOrMissing = Union{Missing, Float64}
+FloatOrMissing = Union{Missing,Float64}
 
 include("stats_missings.jl")
 include("data_struct.jl")
 include("preprocessing.jl")
+include("processing.jl")
+include("response_detection.jl")
 
 end

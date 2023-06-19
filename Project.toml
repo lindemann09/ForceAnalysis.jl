@@ -1,7 +1,7 @@
 name = "ForceAnalysis"
 uuid = "253e1fb9-e260-4ab3-92cb-ad0757323424"
 authors = ["Oliver Lindemann"]
-version = "0.1.7"
+version = "0.1.8-DEV"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"

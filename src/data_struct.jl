@@ -36,7 +36,7 @@ struct MultiForceData{N,T<:FloatOrMissing}
 end;
 
 struct ForceProfiles{T<:FloatOrMissing,B<:FloatOrMissing}
-    force::Matrix{T}
+    dat::Matrix{T}
     sr::Int # sampling rate
     design::DataFrame
     baseline::Vector{B}
@@ -84,11 +84,11 @@ end
 timestamps(x::Union{ForceData,MultiForceData}) = x.ts
 sampling_rate(x::Union{ForceProfiles,ForceData,MultiForceData}) = x.sr
 n_samples(x::Union{ForceData,MultiForceData}) = size(x.dat, 1)
-n_samples(fp::ForceProfiles) = size(fp.force, 2)
-n_profiles(fp::ForceProfiles) = size(fp.force, 1)
+n_samples(fp::ForceProfiles) = size(fp.dat, 2)
+n_profiles(fp::ForceProfiles) = size(fp.dat, 1)
 
 force(x::ForceData) = x.dat
-force(x::ForceProfiles) = x.force
+force(x::ForceProfiles) = x.dat
 force(x::MultiForceData, id::Int) = x.dat[:, id]
 force(x::MultiForceData, id::String) = force(x, Symbol(id))
 function force(x::MultiForceData, id::Symbol)
@@ -99,8 +99,14 @@ function force(x::MultiForceData, id::Symbol)
     return force(x, idx)
 end
 
+function duration(n_samples::Int; sampling_rate::Int)
+    # calculates n of samples into milliseconds duration
+    return n_samples * (1000/sampling_rate)
+end
+
+
 function copy(fp::ForceProfiles)
-    return ForceProfiles(copy(fp.force), fp.sr, copy(fp.design),
+    return ForceProfiles(copy(fp.dat), fp.sr, copy(fp.design),
         copy(fp.baseline), fp.zero_sample)
 end
 
