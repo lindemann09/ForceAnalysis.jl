@@ -62,6 +62,9 @@ function response_onset(
 
     force_diff = diff(force_vector)
     l = length(force_vector)
+    if l == 0
+        return -1
+    end
     l - 1 == length(force_diff) || throw(ArgumentError(
         "length(force_difference) must be length(force_vector)-1 ."))
 

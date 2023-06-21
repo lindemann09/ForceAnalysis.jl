@@ -86,6 +86,7 @@ sampling_rate(x::Union{ForceProfiles,ForceData,MultiForceData}) = x.sr
 n_samples(x::Union{ForceData,MultiForceData}) = size(x.dat, 1)
 n_samples(fp::ForceProfiles) = size(fp.dat, 2)
 n_profiles(fp::ForceProfiles) = size(fp.dat, 1)
+baseline(x::ForceProfiles) = x.baseline
 
 force(x::ForceData) = x.dat
 force(x::ForceProfiles) = x.dat
