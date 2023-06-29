@@ -84,12 +84,21 @@ function aggregate( # FIXME generate methods with multiple variables
         agg_forces, fp.sr, DataFrame(rtn), agg_baseline, fp.zero_sample)
 end;
 
-function subset(fp::ForceProfiles, subset_design::DataFrame; row_idx_column::String="row")
-    i = subset_design[:, row_idx_column]
-    force = fp.dat[i, :]
-    bsln = fp.baseline[i]
+function subset(fp::ForceProfiles, rows::Base.AbstractVecOrTuple{Integer}; row_idx_column::String="row")
+    force = fp.dat[rows, :]
+    bsln = fp.baseline[rows]
+    subset_design = fp.design[rows, :]
     subset_design[:, row_idx_column] = 1:nrow(subset_design) # renumber
     return ForceProfiles(force, fp.sr, subset_design, bsln, fp.zero_sample)
+end
+
+function subset(fp::ForceProfiles, subset_design::DataFrame; row_idx_column::String="row")
+    rows = subset_design[:, row_idx_column]
+    return subset(fp, rows; row_idx_column)
+end
+
+function subset(fp::ForceProfiles, row::Integer; row_idx_column::String="row")
+    return subset(fp, [row]; row_idx_column)
 end
 
 
