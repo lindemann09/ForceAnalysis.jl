@@ -4,6 +4,7 @@ using UnPack
 using DSP # signal processing, filtering
 using Statistics
 using DataFrames
+using JLD2, CodecZlib
 
 import Base.copy
 import DataFrames: subset, aggregate
@@ -12,8 +13,10 @@ export FloatOrMissing,
     ForceData, # force data
     MultiForceData,
     ForceProfiles,
+    load_force_profiles,
+    load_force_data,
+    save_force,
     force,
-    baseline,
     timestamps,
     sampling_rate,
     n_samples,

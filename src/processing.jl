@@ -22,7 +22,7 @@ function profile_parameter(fp::ForceProfiles;
     max_difference=200, # criteria for good trial
     max_diff_windows_size=100,
 )
-    force_profile_matrix = force(fp)
+    force_profile_matrix = fp.dat
     # force profile quality parameter
     (min, max) = row_minmax(force_profile_matrix)
     df = DataFrame(;
@@ -94,7 +94,7 @@ end
 
 function subset(fp::ForceProfiles, subset_design::DataFrame; row_idx_column::String="row")
     rows = subset_design[:, row_idx_column]
-    return subset(fp, rows; row_idx_column)
+    return subset(fp, convert(Vector{Int64}, rows); row_idx_column)
 end
 
 function subset(fp::ForceProfiles, row::Integer; row_idx_column::String="row")
