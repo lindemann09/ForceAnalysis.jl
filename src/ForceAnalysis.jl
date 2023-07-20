@@ -8,6 +8,7 @@ using JLD2, CodecZlib
 
 import Base.copy
 import DataFrames: subset, aggregate
+import CategoricalArrays: unique
 
 export FloatOrMissing,
     ForceData, # force data

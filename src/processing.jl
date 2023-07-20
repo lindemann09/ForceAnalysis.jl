@@ -40,7 +40,7 @@ function profile_parameter(fp::ForceProfiles;
 end;
 
 function aggregate(
-    # TODO generate methods with multiple IVs
+	# TODO generate methods with multiple IVs
 	fp::ForceProfiles;
 	condition::ColumnIndex = :all,
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
@@ -56,11 +56,11 @@ function aggregate(
 	else
 		conditions = fp.design[:, condition]
 	end
-	Tiv = eltype(conditions)
+	Tiv = eltype(unique(conditions)) # unique require to deal with CategoricalArrays
 	bsln = hcat(fp.baseline) # convert to nx1 matrix
 
 	if isnothing(subject_id)
-		dsgn = Dict(condition => Tiv[])
+		dsgn = Dict(condition => Tiv[], row_idx_column => Int64[])
 		for cond in unique(conditions)
 			push!(dsgn[condition], cond)
 			ids = findall(conditions .== cond)
@@ -71,8 +71,9 @@ function aggregate(
 		end
 	else
 		subject_ids = fp.design[:, subject_id]
-		Tsid = eltype(subject_ids)
-		dsgn = Dict(condition => Tiv[], subject_id => Tsid[])
+		Tsid = eltype(unique(subject_ids))
+		dsgn = Dict(condition => Tiv[], subject_id => Tsid[],
+			row_idx_column => Int64[])
 		for sid in unique(subject_ids)
 			for cond in unique(conditions)
 				push!(dsgn[condition], cond)
@@ -85,6 +86,7 @@ function aggregate(
 			end
 		end
 	end
+
 	dsgn[row_idx_column] = 1:length(dsgn[condition])
 	delete!(dsgn, :all)
 	return ForceProfiles(
