@@ -106,8 +106,9 @@ function subset(fp::ForceProfiles, subset_design::DataFrame; row_idx_column::Str
 	return subset(fp, convert(Vector{Int64}, rows); row_idx_column)
 end
 
-function subset(fp::ForceProfiles, row::Integer; row_idx_column::String = "row")
-	return subset(fp, [row]; row_idx_column)
+function subset(fp::ForceProfiles, args...; row_idx_column::String = "row")
+	df = subset(fp.design, args...)
+	rows = convert(Vector{Int64}, df[:, row_idx_column])
+	return subset(fp, rows; row_idx_column)
 end
-
 
