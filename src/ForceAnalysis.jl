@@ -47,8 +47,7 @@ export ForceData, # force data
     mean,
     std,
     var,
-    median,
-    z_transform
+    median
 
 include("data_struct.jl")
 include("stats.jl")

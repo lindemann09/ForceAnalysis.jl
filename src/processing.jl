@@ -1,20 +1,20 @@
-function peak_difference(force_mtx::Matrix{<:T};
-	window_size::Integer = 100,
+function peak_difference(force_mtx::Matrix{T};
+	window_size::Integer = 100
 ) where T<:AbstractFloat
 	# peak difference per row
 	(nr, nc) = size(force_mtx)
-	peak = Vector{T}(undef, nr)
+	rtn = T[]
 	for r in 1:nr
+		peak = 0.0
 		for i in 1:(nc-window_size)
 			diff = abs(force_mtx[r, i+window_size] - force_mtx[r, i])
-			if ismissing(peak[r])
-				peak[r] = diff
-			elseif peak[r] < diff
-				peak[r] = diff
+			if peak < diff
+				peak = diff
 			end
 		end
+		push!(rtn, peak)
 	end
-	return peak
+	return rtn
 end;
 
 function profile_parameter(fp::ForceProfiles;
@@ -65,8 +65,8 @@ function aggregate(
 			push!(dsgn[condition], cond)
 			ids = findall(conditions .== cond)
 			agg_fp = agg_fnc(fp; rows=rows[ids])
-            agg_forces = vcat(agg_forces, agg_fp.dat) #FIXME check transpose?
-            append!(agg_baseline, agg_fp.bsl)
+            agg_forces = vcat(agg_forces, agg_fp.dat)
+            append!(agg_baseline, agg_fp.baseline)
 
 		end
 	else

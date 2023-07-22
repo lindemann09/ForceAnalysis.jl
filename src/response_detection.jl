@@ -132,7 +132,7 @@ end
 function duration(
 	rb::ForceResponse;
 	sampling_rate::Int,
-)::AbstractFloat
+)
 	# returns response latency in millisecond
 	if ismissing(rb.onset) || ismissing(rb.offset)
 		return missing

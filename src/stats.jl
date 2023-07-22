@@ -8,7 +8,6 @@ function mean(fp::ForceProfiles;
         dat = mean(fp.dat[rows, :], dims=1)
         bsl = mean(fp.baseline[rows, :])
     end
-    @info typeof(bsl), typeof(dat)
     return ForceProfiles(dat, fp.sr, DataFrame(), [bsl], fp.zero_sample)
 end
 
@@ -48,14 +47,13 @@ function std(fp::ForceProfiles;
     return ForceProfiles(dat, fp.sr, DataFrame(), [bsl], fp.zero_sample)
 end
 
-function z_transform(fp::ForceProfiles; corrected::Bool=true)
-    ## FIXME not tested
-    m = mean(fp.dat, dims=1)
-    sd = std(fp.dat, dims=1, corrected=corrected)
-    dat = (fp.dat .- m)./sd
-    bsl = (fp.baseline .- m)./sd
-    return ForceProfiles(dat, fp.sr, DataFrame(), bsl, fp.zero_sample)
-end
+# function z_transform(fp::ForceProfiles; corrected::Bool=true)
+#     m = mean(fp.dat, dims=2)
+#     sd = std(fp.dat, dims=2, corrected=corrected)
+#     dat = (fp.dat .- m)./sd
+#     bsl = (fp.baseline .- vec(m))./vec(sd)
+#     return ForceProfiles(dat, fp.sr, fp.design, bsl, fp.zero_sample)
+# end
 
 """
     minimum(fp:ForceProfiles)
