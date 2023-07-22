@@ -1,12 +1,12 @@
-struct OnsetCriterion
-	min_increase::Float64  # min change between two samples
-	min_increase_in_window::Float64
+struct OnsetCriterion{T<:AbstractFloat}
+	min_increase::T  # min change between two samples
+	min_increase_in_window::T
 	window_size::Int
-	function OnsetCriterion(min_increase, min_increase_in_window, window_size)
+	function OnsetCriterion(min_increase::T, min_increase_in_window::T, window_size) where T<:AbstractFloat
 		(min_increase >= 0 && min_increase_in_window >= 0
 		 && window_size >= 0) || throw(ArgumentError(
 			"No negative parameter allowed for OnsetCriterion"))
-		return new(min_increase, min_increase_in_window, window_size)
+		return new{T}(min_increase, min_increase_in_window, window_size)
 	end
 end;
 
@@ -32,7 +32,7 @@ function OnsetCriterion(;
 end
 
 function response_onset(
-	force_vector::AbstractVector{<:FloatOrMissing},
+	force_vector::AbstractVector{<:AbstractFloat},
 	criterion::OnsetCriterion,
 )::Int
 	# returns the counter in the vector with the first onset
@@ -71,7 +71,7 @@ function response_onset(
 end
 
 function response_offset(
-	force_vector::AbstractVector{<:FloatOrMissing},
+	force_vector::AbstractVector{<:AbstractFloat},
 	criterion::OnsetCriterion;
 	onset::Integer,
 )::Int
@@ -101,7 +101,7 @@ function response_offset(
 end
 
 function response_detection(
-	force_vector::AbstractVector{<:FloatOrMissing},
+	force_vector::AbstractVector{<:AbstractFloat},
 	criterion::OnsetCriterion;
 	zero_sample::Integer,
 )::ForceResponse
@@ -132,7 +132,7 @@ end
 function duration(
 	rb::ForceResponse;
 	sampling_rate::Int,
-)::FloatOrMissing
+)::AbstractFloat
 	# returns response latency in millisecond
 	if ismissing(rb.onset) || ismissing(rb.offset)
 		return missing
@@ -143,7 +143,7 @@ end
 function duration(
 	vrb::AbstractVector{ForceResponse};
 	sampling_rate::Int,
-)::Vector{FloatOrMissing}
+)
 	return [duration(rb; sampling_rate) for rb in vrb]
 end
 
@@ -151,7 +151,7 @@ end
 function latency(
 	rb::ForceResponse;
 	sampling_rate::Int,
-)::FloatOrMissing
+)
 	# returns latency in millisecond
 	if ismissing(rb.onset)
 		return missing
@@ -162,13 +162,13 @@ end
 function latency(
 	vrb::AbstractVector{ForceResponse};
 	sampling_rate::Int,
-)::Vector{FloatOrMissing}
+)
 	return [latency(rb; sampling_rate) for rb in vrb]
 end
 
 
 function peak_force(
-	force_vector::AbstractVector{<:FloatOrMissing},
+	force_vector::AbstractVector{<:AbstractFloat},
 	rb::ForceResponse,
 )
 	# returns (peak force, n sample to peak (reltive to onset))
@@ -193,7 +193,7 @@ end
 
 
 function impulse_size(
-	force_vector::AbstractVector{<:FloatOrMissing},
+	force_vector::AbstractVector{<:AbstractFloat},
 	rb::ForceResponse,
 )   # TODO not yet tested
 	resp = extract_response(force_vector, rb)
@@ -213,7 +213,7 @@ end
 
 # helper
 function extract_response(
-	force_vector::AbstractVector{<:FloatOrMissing},
+	force_vector::AbstractVector{<:AbstractFloat},
 	rb::ForceResponse,
 )
 	if ismissing(rb.offset) || ismissing(rb.offset)

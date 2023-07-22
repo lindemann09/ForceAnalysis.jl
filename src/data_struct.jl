@@ -1,4 +1,4 @@
-struct ForceData{T<:FloatOrMissing}
+struct ForceData{T<:AbstractFloat}
     dat::Vector{T} # force data
     ts::Vector{Int} # timestamps
     sr::Int # sampling_rate
@@ -10,7 +10,7 @@ struct ForceData{T<:FloatOrMissing}
     end
 end;
 
-struct MultiForceData{N,T<:FloatOrMissing}
+struct MultiForceData{N,T<:AbstractFloat}
     dat::Matrix{T} # force data
     ts::Vector{Int} # timestamps
     sr::Int # sampling rate
@@ -35,15 +35,15 @@ struct MultiForceData{N,T<:FloatOrMissing}
     end
 end;
 
-struct ForceProfiles{T<:FloatOrMissing,B<:FloatOrMissing}
+struct ForceProfiles{T<:AbstractFloat}
     dat::Matrix{T}
     sr::Int # sampling rate
     design::DataFrame
-    baseline::Vector{B}
+    baseline::Vector{T}
     zero_sample::Int
 
     function ForceProfiles(force::Matrix{T}, sr::Int, design::DataFrame,
-        baseline::Vector{B}, zero_sample::Int) where {T,B}
+        baseline::Vector{T}, zero_sample::Int) where {T<:AbstractFloat}
         lf = size(force, 1)
         lb = length(baseline)
         lf == lb || throw(
@@ -51,7 +51,7 @@ struct ForceProfiles{T<:FloatOrMissing,B<:FloatOrMissing}
                 "Number of rows of force ($(lf)) must match the length of baseline ($(lb)).",
             ),
         )
-        return new{T,B}(force, sr, design, baseline, zero_sample::Int)
+        return new{T}(force, sr, design, baseline, zero_sample::Int)
     end
 end;
 

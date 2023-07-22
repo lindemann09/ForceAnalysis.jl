@@ -3,7 +3,7 @@ const ColumnIndex = Union{Symbol,AbstractString}
 #     ColumnIndex, AbstractVector{<:ColumnIndex},Tuple{<:ColumnIndex}
 # }
 
-function lowpass_filter(dat::Vector{<:FloatOrMissing};
+function lowpass_filter(dat::Vector{<:AbstractFloat};
     sampling_rate::Integer,
     cutoff_feq::Integer,
     butterworth_order::Integer,
@@ -35,15 +35,15 @@ function lowpass_filter(force_data::MultiForceData;
 end;
 
 function force_profile_matrix(
-    force_data::ForceData;
+    force_data::ForceData{T};
     zero_times::AbstractVector{<:Integer},
     n_samples::Integer,
     n_samples_before::Integer,
-)
+) where T<:AbstractFloat
     @unpack dat, ts = force_data
     len_force = length(dat)
     nrow = length(zero_times)
-    rtn = Matrix{FloatOrMissing}(missing, nrow, n_samples_before + n_samples)
+    rtn = Matrix{T}(undef, nrow, n_samples_before + n_samples)
     for r in 1:nrow
         i = _find_larger_or_equal(zero_times[r], ts)
         if i !== nothing
@@ -77,8 +77,8 @@ function force_data_preprocess(force_data::ForceData;
     # extract force profile per trial
     force_mtx = force_profile_matrix(tmp;
         zero_times=profiles_zero_times, n_samples, n_samples_before)
-    #baseline adjustment
-    bsl = row_mean(force_mtx[:, baseline_sample_range])
+    #baseline adjustment (row_mean)
+    bsl = vec(mean(force_mtx[:, baseline_sample_range], dims=2))
     force_mtx = force_mtx .- bsl
     return ForceProfiles(
         force_mtx, sampling_rate(force_data), DataFrame(), bsl, n_samples_before + 1)

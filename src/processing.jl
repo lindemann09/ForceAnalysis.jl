@@ -1,9 +1,9 @@
-function peak_difference(force_mtx::Matrix{<:FloatOrMissing};
+function peak_difference(force_mtx::Matrix{<:T};
 	window_size::Integer = 100,
-)
+) where T<:AbstractFloat
 	# peak difference per row
 	(nr, nc) = size(force_mtx)
-	peak = Vector{FloatOrMissing}(missing, nr)
+	peak = Vector{T}(undef, nr)
 	for r in 1:nr
 		for i in 1:(nc-window_size)
 			diff = abs(force_mtx[r, i+window_size] - force_mtx[r, i])
@@ -24,10 +24,9 @@ function profile_parameter(fp::ForceProfiles;
 )
 	force_profile_matrix = fp.dat
 	# force profile quality parameter
-	(min, max) = row_minmax(force_profile_matrix)
 	df = DataFrame(;
-		min = min[:],
-		max = max[:],
+		min = minimum(fp),
+		max = maximum(fp),
 		peak_differences = peak_difference(force_profile_matrix;
 			window_size = max_diff_windows_size),
 	)
@@ -41,15 +40,16 @@ end;
 
 function aggregate(
 	# TODO generate methods with multiple IVs
-	fp::ForceProfiles;
+	fp::ForceProfiles{T};
 	condition::ColumnIndex = :all,
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
 	row_idx_column = :row,
-	agg_fnc = column_mean,
-)
+	agg_fnc = mean,
+) where T<:AbstractFloat
+
 	# aggregate per subject
-	agg_forces = Matrix{Float64}(undef, 0, size(fp.dat, 2))
-	agg_baseline = Float64[]
+	agg_forces = Matrix{T}(undef, 0, size(fp.dat, 2))
+	agg_baseline = T[]
 	rows = fp.design[:, row_idx_column]
 	if condition == :all
 		conditions = repeat([true], nrow(fp.design))
@@ -64,10 +64,10 @@ function aggregate(
 		for cond in unique(conditions)
 			push!(dsgn[condition], cond)
 			ids = findall(conditions .== cond)
-			m = agg_fnc(fp.dat; rows = rows[ids])
-			agg_forces = vcat(agg_forces, transpose(m))
-			m = agg_fnc(bsln; rows = rows[ids])
-			append!(agg_baseline, m)
+			agg_fp = agg_fnc(fp; rows=rows[ids])
+            agg_forces = vcat(agg_forces, agg_fp.dat) #FIXME check transpose?
+            append!(agg_baseline, agg_fp.bsl)
+
 		end
 	else
 		subject_ids = fp.design[:, subject_id]
@@ -79,11 +79,10 @@ function aggregate(
 				push!(dsgn[condition], cond)
 				push!(dsgn[subject_id], sid)
 				ids = findall(subject_ids .== sid .&& conditions .== cond)
-				m = agg_fnc(fp.dat; rows = rows[ids])
-				agg_forces = vcat(agg_forces, transpose(m))
-				m = agg_fnc(bsln; rows = rows[ids])
-				append!(agg_baseline, m)
-			end
+				agg_fp = agg_fnc(fp; rows=rows[ids])
+				agg_forces = vcat(agg_forces, agg_fp.dat)
+				append!(agg_baseline, agg_fp.baseline)
+				end
 		end
 	end
 

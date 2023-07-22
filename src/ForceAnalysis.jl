@@ -2,16 +2,15 @@ module ForceAnalysis
 
 using UnPack
 using DSP # signal processing, filtering
-using Statistics
 using DataFrames
 using JLD2, CodecZlib
 
-import Base.copy
+import Base: copy, minimum, maximum
 import DataFrames: subset, aggregate
 import CategoricalArrays: unique
+import Statistics: mean, median, var, std
 
-export FloatOrMissing,
-    ForceData, # force data
+export ForceData, # force data
     MultiForceData,
     ForceProfiles,
     load_force_profiles,
@@ -42,28 +41,17 @@ export FloatOrMissing,
     peak_force,
     impulse_size,
     latency,
-    extract_response
+    extract_response,
+    minimum,
+    maximum,
+    mean,
+    std,
+    var,
+    median,
+    z_transform
 
-    # randFloatOrMissing,
-    # z_transform,
-    # eachcol_select_rows,
-    # eachrow_select_cols,
-    # column_mean,
-    # column_minmax,
-    # column_sum,
-    # column_var,
-    # column_std,
-    # column_diff,
-    # row_mean,
-    # row_std,
-    # row_minmax,
-    # row_sum,
-    # row_var
-
-FloatOrMissing = Union{Missing,Float64}
-
-include("stats_missings.jl")
 include("data_struct.jl")
+include("stats.jl")
 include("preprocessing.jl")
 include("processing.jl")
 include("response_detection.jl")
