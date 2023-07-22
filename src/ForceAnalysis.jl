@@ -23,10 +23,11 @@ export ForceData, # force data
     n_profiles,
     copy,
     duration,
+    scale_force!,
     # preprocessing
-    lowpass_filter,
-    force_profile_matrix,
-    force_data_preprocess,
+    lowpass_filter!,
+    extract_force_profiles,
+    adjust_baseline!,
     # processing
     peak_difference,
     profile_parameter,

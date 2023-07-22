@@ -1,98 +1,105 @@
-const ColumnIndex = Union{Symbol,AbstractString}
+const ColumnIndex = Union{Symbol, AbstractString}
 # const MultiColumnIndex = Union{
 #     ColumnIndex, AbstractVector{<:ColumnIndex},Tuple{<:ColumnIndex}
 # }
 
-function lowpass_filter(dat::Vector{<:AbstractFloat};
-    sampling_rate::Integer,
-    cutoff_feq::Integer,
-    butterworth_order::Integer,
+function lowpass_filter(dat::AbstractVector{<:AbstractFloat};
+	sampling_rate::Integer,
+	cutoff_feq::Integer,
+	butterworth_order::Integer,
 )
-    responsetype = Lowpass(cutoff_feq; fs=sampling_rate)
-    myfilter = digitalfilter(responsetype, Butterworth(butterworth_order))
-    return filtfilt(myfilter, dat .- dat[1]) .+ dat[1]  # filter centered data
+	responsetype = Lowpass(cutoff_feq; fs = sampling_rate)
+	myfilter = digitalfilter(responsetype, Butterworth(butterworth_order))
+	return filtfilt(myfilter, dat .- dat[1]) .+ dat[1]  # filter centered data
 end;
 
-function lowpass_filter(force_data::ForceData;
-    cutoff_feq::Integer,
-    butterworth_order::Integer=4
+function lowpass_filter!(fd::ForceData;
+	cutoff_feq::Integer,
+	butterworth_order::Integer = 4,
 )
-    @unpack dat, sr = force_data
-    flt = lowpass_filter(dat; sampling_rate=sr, cutoff_feq, butterworth_order)
-    return ForceData(flt, force_data.ts, sr, force_data.meta)
+	fd.dat[:] = lowpass_filter(fd.dat;
+		sampling_rate = fd.sr, cutoff_feq, butterworth_order)
+	return fd
 end;
 
-function lowpass_filter(force_data::MultiForceData;
-    cutoff_feq::Integer,
-    butterworth_order::Integer=4
-)
-    @unpack dat, sr = force_data
-    flt = similar(dat)
-    for (i, d) in enumerate(eachcol(dat))
-        flt[i,] = lowpass_filter(d; sampling_rate=sr, cutoff_feq, butterworth_order)
-    end
-    return MultiForceData(flt, force_data.ts, sr, force_data.ids, force_data.meta)
+function lowpass_filter!(fp::ForceProfiles{T};
+	cutoff_feq::Integer,
+	butterworth_order::Integer = 4,
+) where T <: AbstractFloat
+	for i in 1:n_profiles(fp)
+		fp.dat[i, :] = lowpass_filter(vec(fp.dat[i, :]);
+			sampling_rate = fp.sr, cutoff_feq, butterworth_order)
+	end
+	return fp
 end;
 
-function force_profile_matrix(
-    force_data::ForceData{T};
-    zero_times::AbstractVector{<:Integer},
-    n_samples::Integer,
-    n_samples_before::Integer,
-) where T<:AbstractFloat
-    @unpack dat, ts = force_data
-    len_force = length(dat)
-    nrow = length(zero_times)
-    rtn = Matrix{T}(undef, nrow, n_samples_before + n_samples)
-    for r in 1:nrow
-        i = _find_larger_or_equal(zero_times[r], ts)
-        if i !== nothing
-            from = (i - n_samples_before)
-            to = (i + n_samples - 1)
-            if from < len_force
-                if to > len_force
-                    to = len_force
-                end
-                rtn[r, 1:(to - from + 1)] .= dat[from:to]
-            end
-        end
-    end
-    return rtn
+function lowpass_filter!(fd::MultiForceData;
+	cutoff_feq::Integer,
+	butterworth_order::Integer = 4,
+)
+	for (i, d) in enumerate(eachcol(fd.dat))
+		fd.dat[i, :] = lowpass_filter(d;
+			sampling_rate = fd.sr, cutoff_feq, butterworth_order)
+	end
+	return fd
 end;
 
-function force_data_preprocess(force_data::ForceData;
-    profiles_zero_times::AbstractVector{<:Integer},
-    n_samples::Integer,
-    n_samples_before::Integer,
-    baseline_sample_range::UnitRange{<:Integer},
-    scale_forces::AbstractFloat=1,
-    filter_cutoff_feq::Integer=15,
-    butterworth_order::Integer=4,
-)
-    ## filter and scale data
-    flt =
-        lowpass_filter(force_data.dat; sampling_rate=force_data.sr,
-            cutoff_feq=filter_cutoff_feq, butterworth_order) .* scale_forces
-    tmp = ForceData(flt, force_data.ts, force_data.sr, force_data.meta)
-    # extract force profile per trial
-    force_mtx = force_profile_matrix(tmp;
-        zero_times=profiles_zero_times, n_samples, n_samples_before)
-    #baseline adjustment (row_mean)
-    bsl = vec(mean(force_mtx[:, baseline_sample_range], dims=2))
-    force_mtx = force_mtx .- bsl
-    return ForceProfiles(
-        force_mtx, sampling_rate(force_data), DataFrame(), bsl, n_samples_before + 1)
+function extract_force_profiles(
+	force_data::ForceData{T};
+	zero_times::AbstractVector{<:Integer},
+	n_samples::Integer,
+	n_samples_before::Integer,
+) where T <: AbstractFloat
+	@unpack dat, ts = force_data
+	len_force = length(dat)
+	nrow = length(zero_times)
+	ncol = n_samples_before + n_samples
+	force_mtx = Matrix{T}(undef, nrow, ncol)
+	for r in 1:nrow
+		i = _find_larger_or_equal(zero_times[r], ts)
+		if i !== nothing
+			from = (i - n_samples_before)
+			to = (i + n_samples - 1)
+			if from < len_force
+				if to > len_force
+					to = len_force
+				end
+				force_mtx[r, :] .= dat[from:to]
+			end
+		end
+	end
+	return ForceProfiles(force_mtx, sampling_rate(force_data),
+		DataFrame(), zeros(T, nrow), n_samples_before + 1)
 end;
+
+function scale_force!(fd::ForceData, factor::AbstractFloat)
+	fd.dat[:] = fd.dat .* factor
+	return fd
+end
+
+function scale_force!(fp::ForceProfiles, factor::AbstractFloat)
+	fp.dat[:, :] = fp.dat .* factor
+	fp.baseline[:] = fp.baseline .* factor
+	return fp
+end
+
+function adjust_baseline!(fp::ForceProfiles; sample_range::UnitRange{<:Integer})
+	dat = fp.dat .+ fp.baseline
+	bsl = vec(mean(dat[:, sample_range], dims = 2))
+	fp.dat[:, :] .= fp.dat .- bsl
+	fp.baseline[:] .= bsl
+	return fp
+end
 
 
 ### helper functions
-function _find_larger_or_equal(needle::T, sorted_array::AbstractVector{T}) where {T<:Real}
-    cnt::Int = 0
-    for x in sorted_array
-        cnt = cnt + 1
-        if x >= needle
-            return cnt
-        end
-    end
-    return nothing
+function _find_larger_or_equal(needle::T, sorted_array::AbstractVector{T}) where {T <: Real}
+	cnt::Int = 0
+	for x in sorted_array
+		cnt = cnt + 1
+		if x >= needle
+			return cnt
+		end
+	end
+	return nothing
 end;
