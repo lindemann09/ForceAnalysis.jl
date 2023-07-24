@@ -4,42 +4,42 @@ const ColumnIndex = Union{Symbol, AbstractString}
 # }
 
 function lowpass_filter(dat::AbstractVector{<:AbstractFloat};
-	sampling_rate::Integer,
-	cutoff_feq::Integer,
+	sampling_rate::Real,
+	cutoff_freq::Real,
 	butterworth_order::Integer,
 )
-	responsetype = Lowpass(cutoff_feq; fs = sampling_rate)
+	responsetype = Lowpass(cutoff_freq; fs = sampling_rate)
 	myfilter = digitalfilter(responsetype, Butterworth(butterworth_order))
 	return filtfilt(myfilter, dat .- dat[1]) .+ dat[1]  # filter centered data
 end;
 
 function lowpass_filter!(fd::ForceData;
-	cutoff_feq::Integer,
+	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
 )
 	fd.dat[:] = lowpass_filter(fd.dat;
-		sampling_rate = fd.sr, cutoff_feq, butterworth_order)
+		sampling_rate = fd.sr, cutoff_freq, butterworth_order)
 	return fd
 end;
 
 function lowpass_filter!(fp::ForceProfiles{T};
-	cutoff_feq::Integer,
+	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
 ) where T <: AbstractFloat
 	for i in 1:n_profiles(fp)
 		fp.dat[i, :] = lowpass_filter(vec(fp.dat[i, :]);
-			sampling_rate = fp.sr, cutoff_feq, butterworth_order)
+			sampling_rate = fp.sr, cutoff_freq, butterworth_order)
 	end
 	return fp
 end;
 
 function lowpass_filter!(fd::MultiForceData;
-	cutoff_feq::Integer,
+	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
 )
 	for (i, d) in enumerate(eachcol(fd.dat))
 		fd.dat[i, :] = lowpass_filter(d;
-			sampling_rate = fd.sr, cutoff_feq, butterworth_order)
+			sampling_rate = fd.sr, cutoff_freq, butterworth_order)
 	end
 	return fd
 end;
@@ -87,8 +87,8 @@ end
 
 function adjust_baseline!(fp::ForceProfiles; sample_range::UnitRange{<:Integer})
 	dat = fp.dat .+ fp.baseline
-	bsl = vec(mean(dat[:, sample_range], dims = 2))
-	fp.dat[:, :] .= fp.dat .- bsl
+	bsl = mean(dat[:, sample_range], dims = 2)
+	fp.dat[:, :] .= dat .- bsl
 	fp.baseline[:] .= bsl
 	return fp
 end
