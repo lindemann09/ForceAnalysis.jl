@@ -47,6 +47,22 @@ function std(fp::ForceProfiles;
     return ForceProfiles(dat, fp.sr, DataFrame(), [bsl], fp.zero_sample)
 end
 
+
+function diff(fp::ForceProfiles{T}; dims::Integer) where {T}
+    mtx = fp.dat
+    if dims == 1
+        z = zeros(T, 1, size(mtx, 2))
+        dat = vcat(z, diff(mtx; dims=1))
+    elseif dims == 2
+        z = zeros(T, size(mtx, 1), 1)
+        dat = hcat(z, diff(mtx; dims=2))
+    else
+        throw(ArgumentError("dims has to be 1 or 2 and not $dims"))
+    end
+    return ForceProfiles(dat, fp.sr, fp.design, fp.baseline, fp.zero_sample)
+end;
+
+
 # function z_transform(fp::ForceProfiles; corrected::Bool=true)
 #     m = mean(fp.dat, dims=2)
 #     sd = std(fp.dat, dims=2, corrected=corrected)

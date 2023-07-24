@@ -1,8 +1,8 @@
-struct OnsetCriterion{T<:AbstractFloat}
+struct OnsetCriterion{T <: AbstractFloat}
 	min_increase::T  # min change between two samples
 	min_increase_in_window::T
 	window_size::Int
-	function OnsetCriterion(min_increase::T, min_increase_in_window::T, window_size) where T<:AbstractFloat
+	function OnsetCriterion(min_increase::T, min_increase_in_window::T, window_size) where T <: AbstractFloat
 		(min_increase >= 0 && min_increase_in_window >= 0
 		 && window_size >= 0) || throw(ArgumentError(
 			"No negative parameter allowed for OnsetCriterion"))
@@ -28,7 +28,8 @@ function OnsetCriterion(;
 	min_increase_in_window::Real,
 	window_size::Integer,
 )
-	return OnsetCriterion(min_increase, min_increase_in_window, window_size)
+	return OnsetCriterion(AbstractFloat(min_increase),
+		AbstractFloat(min_increase_in_window), window_size)
 end
 
 function response_onset(
@@ -93,7 +94,7 @@ function response_offset(
 		# reverse data and find onset
 		rev_onset = response_onset(force_vector[l:-1:from], criterion)
 		if rev_onset >= 0
-			return  l - rev_onset
+			return l - rev_onset
 		else
 			return -1
 		end

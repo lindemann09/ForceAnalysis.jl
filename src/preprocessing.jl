@@ -62,9 +62,11 @@ function extract_force_profiles(
 			to = (i + n_samples - 1)
 			if from < len_force
 				if to > len_force
-					to = len_force
+					@warn "extract_force_profiles: last force profile is incomplete"
+					force_mtx[r, :] .= vcat(dat[from:len_force], zeros(T, to - len_force))
+				else
+					force_mtx[r, :] .= dat[from:to]
 				end
-				force_mtx[r, :] .= dat[from:to]
 			end
 		end
 	end

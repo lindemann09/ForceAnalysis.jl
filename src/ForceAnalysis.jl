@@ -5,7 +5,7 @@ using DSP # signal processing, filtering
 using DataFrames
 using JLD2, CodecZlib
 
-import Base: copy, minimum, maximum
+import Base: copy, minimum, maximum, diff
 import DataFrames: subset, aggregate
 import CategoricalArrays: unique
 import Statistics: mean, median, var, std
@@ -48,7 +48,8 @@ export ForceData, # force data
     mean,
     std,
     var,
-    median
+    median,
+    diff
 
 include("data_struct.jl")
 include("stats.jl")
