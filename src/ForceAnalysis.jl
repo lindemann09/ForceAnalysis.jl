@@ -5,7 +5,7 @@ using DSP # signal processing, filtering
 using DataFrames
 using JLD2, CodecZlib
 
-import Base: copy, minimum, maximum, diff
+import Base: minimum, maximum, diff
 import DataFrames: subset, aggregate
 import CategoricalArrays: unique
 import Statistics: mean, median, var, std
@@ -17,11 +17,6 @@ export ForceData, # force data
     load_force_data,
     save_force,
     force,
-    timestamps,
-    sampling_rate,
-    n_samples,
-    n_profiles,
-    copy,
     duration,
     scale_force!,
     # preprocessing

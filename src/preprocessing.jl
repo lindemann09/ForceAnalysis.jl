@@ -26,7 +26,7 @@ function lowpass_filter!(fp::ForceProfiles{T};
 	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
 ) where T <: AbstractFloat
-	for i in 1:n_profiles(fp)
+	for i in 1:fp.n_profiles
 		fp.dat[i, :] = lowpass_filter(vec(fp.dat[i, :]);
 			sampling_rate = fp.sr, cutoff_freq, butterworth_order)
 	end

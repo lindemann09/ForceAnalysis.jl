@@ -187,7 +187,7 @@ function peak_force(
 	rb::AbstractVector{ForceResponse},
 )
 	# takes into account zero samples
-	n_profiles(fp) == length(rb) || throw(ArgumentError(
+	fp.n_profiles == length(rb) || throw(ArgumentError(
 		"Number of profiles and ForceResponse don't match!"))
 	return [peak_force(f, b) for (f, b) in zip(eachrow(fp.dat), rb)]
 end
@@ -207,7 +207,7 @@ function impulse_size(
 	fp::ForceProfiles,
 	rb::AbstractVector{ForceResponse},
 )
-	n_profiles(fp) == length(rb) || throw(ArgumentError(
+	fp.n_profiles == length(rb) || throw(ArgumentError(
 		"Number of profiles and ForceResponse don't match!"))
 	return [impulse_size(f, b) for (f, b) in zip(eachrow(fp.dat), rb)]
 end
