@@ -4,21 +4,24 @@ using UnPack
 using DSP # signal processing, filtering
 using DataFrames
 using JLD2, CodecZlib
+using CSV, JSON
+using ZipArchives
 
 import Base: minimum, maximum, diff
 import DataFrames: subset, aggregate
 import CategoricalArrays: unique
 import Statistics: mean, median, var, std
+import FileIO: save, load
 
 export ForceData, # force data
     MultiForceData,
     ForceProfiles,
-    load_force_profiles,
-    load_force_data,
-    save_force,
     force,
     duration,
     scale_force!,
+    save,
+    load,
+    export_csv,
     # preprocessing
     lowpass_filter!,
     extract_force_profiles,
@@ -47,6 +50,7 @@ export ForceData, # force data
     diff
 
 include("data_struct.jl")
+include("io.jl")
 include("stats.jl")
 include("preprocessing.jl")
 include("processing.jl")

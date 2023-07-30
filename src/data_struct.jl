@@ -169,20 +169,6 @@ function Base.show(io::IO, mime::MIME"text/plain", x::ForceProfiles)
 	print(io, "  Design: $(names(x.design))")
 end
 
-function load_force_profiles(filename::String)
-	return convert(ForceProfiles, load_object(filename))
-end;
-
-function load_force_data(filename::String)
-	return convert(ForceData, load_object(filename))
-end;
-
-function save_force(forces::Union{ForceProfiles, ForceData}, filename::String)
-	if last(splitext(filename)) != ".jld2"
-		filename = filename * ".jld2"
-	end
-	return jldsave(filename, true; forces)
-end;
 
 # helper
 function check_timestamps(timestamps::Vector, required_length::Int)
