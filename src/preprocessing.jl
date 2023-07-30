@@ -70,7 +70,7 @@ function extract_force_profiles(
 			end
 		end
 	end
-	return ForceProfiles(force_mtx, sampling_rate(force_data),
+	return ForceProfiles(force_mtx, force_data.sampling_rate,
 		DataFrame(), zeros(T, nrow), n_samples_before + 1)
 end;
 
