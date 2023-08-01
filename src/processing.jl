@@ -57,7 +57,6 @@ function aggregate(
 		conditions = fp.design[:, condition]
 	end
 	Tiv = eltype(unique(conditions)) # unique require to deal with CategoricalArrays
-	bsln = hcat(fp.baseline) # convert to nx1 matrix
 
 	if isnothing(subject_id)
 		dsgn = Dict(condition => Tiv[], row_idx_column => Int64[])

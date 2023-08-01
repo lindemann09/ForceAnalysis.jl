@@ -21,7 +21,6 @@ export ForceData, # force data
     scale_force!,
     save,
     load,
-    export_csv,
     # preprocessing
     lowpass_filter!,
     extract_force_profiles,
