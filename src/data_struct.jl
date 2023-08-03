@@ -86,14 +86,14 @@ function Base.getproperty(x::MultiForceData, s::Symbol)
 end
 
 
-struct ForceProfiles{T <: AbstractFloat}
+struct ForceEpochs{T <: AbstractFloat}
 	dat::Matrix{T}
 	sr::Int # sampling rate
 	design::DataFrame
 	baseline::Vector{T}
 	zero_sample::Int
 
-	function ForceProfiles(force::Matrix{T}, sr::Int, design::DataFrame,
+	function ForceEpochs(force::Matrix{T}, sr::Int, design::DataFrame,
 		baseline::Vector{T}, zero_sample::Int) where {T <: AbstractFloat}
 		lf = size(force, 1)
 		lb = length(baseline)
@@ -107,10 +107,10 @@ struct ForceProfiles{T <: AbstractFloat}
 end;
 
 
-Base.propertynames(::ForceProfiles) = (:dat, :sampling_rate, :design, :baseline,
-	:zero_sample, :n_samples, :n_profiles)
-function Base.getproperty(x::ForceProfiles, s::Symbol)
-	if s === :n_profiles
+Base.propertynames(::ForceEpochs) = (:dat, :sampling_rate, :design, :baseline,
+	:zero_sample, :n_samples, :n_epochs)
+function Base.getproperty(x::ForceEpochs, s::Symbol)
+	if s === :n_epochs
 		return size(x.dat, 1)
 	elseif s === :sampling_rate
 		return x.sr
@@ -123,7 +123,7 @@ end
 
 
 force(x::ForceData) = x.dat
-force(x::ForceProfiles) = x.dat
+force(x::ForceEpochs) = x.dat
 force(x::MultiForceData, id::Int) = x.dat[:, id]
 force(x::MultiForceData, id::String) = force(x, Symbol(id))
 
@@ -145,9 +145,9 @@ function duration(n_samples::Int; sampling_rate::Int)
 end
 
 
-function Base.copy(fp::ForceProfiles)
-	return ForceProfiles(copy(fp.dat), fp.sr, copy(fp.design),
-		copy(fp.baseline), fp.zero_sample)
+function Base.copy(fe::ForceEpochs)
+	return ForceEpochs(copy(fe.dat), fe.sr, copy(fe.design),
+		copy(fe.baseline), fe.zero_sample)
 end
 
 
@@ -162,9 +162,9 @@ function Base.show(io::IO, mime::MIME"text/plain", x::MultiForceData)
 end;
 
 
-function Base.show(io::IO, mime::MIME"text/plain", x::ForceProfiles)
-	println(io, "ForceProfile")
-	println(io, "  $(x.n_profiles) profiles")
+function Base.show(io::IO, mime::MIME"text/plain", x::ForceEpochs)
+	println(io, "ForceEpochs")
+	println(io, "  $(x.n_epochs) epochs")
 	println(io, "  $(x.n_samples) samples, sampling rate: $(x.sampling_rate), zero sample: $(x.zero_sample)")
 	print(io, "  Design: $(names(x.design))")
 end

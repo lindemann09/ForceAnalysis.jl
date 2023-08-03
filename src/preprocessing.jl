@@ -22,15 +22,15 @@ function lowpass_filter!(fd::ForceData;
 	return fd
 end;
 
-function lowpass_filter!(fp::ForceProfiles{T};
+function lowpass_filter!(fe::ForceEpochs{T};
 	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
 ) where T <: AbstractFloat
-	for i in 1:fp.n_profiles
-		fp.dat[i, :] = lowpass_filter(vec(fp.dat[i, :]);
-			sampling_rate = fp.sr, cutoff_freq, butterworth_order)
+	for i in 1:fe.n_epochs
+		fe.dat[i, :] = lowpass_filter(vec(fe.dat[i, :]);
+			sampling_rate = fe.sr, cutoff_freq, butterworth_order)
 	end
-	return fp
+	return fe
 end;
 
 function lowpass_filter!(fd::MultiForceData;
@@ -44,7 +44,7 @@ function lowpass_filter!(fd::MultiForceData;
 	return fd
 end;
 
-function extract_force_profiles(
+function extract_force_epochs(
 	force_data::ForceData{T};
 	zero_times::AbstractVector{<:Integer},
 	n_samples::Integer,
@@ -62,7 +62,7 @@ function extract_force_profiles(
 			to = (i + n_samples - 1)
 			if from < len_force
 				if to > len_force
-					@warn "extract_force_profiles: last force profile is incomplete"
+					@warn "extract_force_epochs: last force epoch is incomplete"
 					force_mtx[r, :] .= vcat(dat[from:len_force], zeros(T, to - len_force))
 				else
 					force_mtx[r, :] .= dat[from:to]
@@ -70,7 +70,7 @@ function extract_force_profiles(
 			end
 		end
 	end
-	return ForceProfiles(force_mtx, force_data.sampling_rate,
+	return ForceEpochs(force_mtx, force_data.sampling_rate,
 		DataFrame(), zeros(T, nrow), n_samples_before + 1)
 end;
 
@@ -79,18 +79,18 @@ function scale_force!(fd::ForceData, factor::AbstractFloat)
 	return fd
 end
 
-function scale_force!(fp::ForceProfiles, factor::AbstractFloat)
-	fp.dat[:, :] = fp.dat .* factor
-	fp.baseline[:] = fp.baseline .* factor
-	return fp
+function scale_force!(fe::ForceEpochs, factor::AbstractFloat)
+	fe.dat[:, :] = fe.dat .* factor
+	fe.baseline[:] = fe.baseline .* factor
+	return fe
 end
 
-function adjust_baseline!(fp::ForceProfiles; sample_range::UnitRange{<:Integer})
-	dat = fp.dat .+ fp.baseline
+function adjust_baseline!(fe::ForceEpochs; sample_range::UnitRange{<:Integer})
+	dat = fe.dat .+ fe.baseline
 	bsl = mean(dat[:, sample_range], dims = 2)
-	fp.dat[:, :] .= dat .- bsl
-	fp.baseline[:] .= bsl
-	return fp
+	fe.dat[:, :] .= dat .- bsl
+	fe.baseline[:] .= bsl
+	return fe
 end
 
 

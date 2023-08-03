@@ -17,17 +17,17 @@ function peak_difference(force_mtx::Matrix{T};
 	return rtn
 end;
 
-function profile_parameter(fp::ForceProfiles;
+function epoch_parameter(fe::ForceEpochs;
 	force_range::UnitRange = -400:400, # criteria for good trial
 	max_difference = 200, # criteria for good trial
 	max_diff_windows_size = 100,
 )
-	force_profile_matrix = fp.dat
-	# force profile quality parameter
+	force_matrix = fe.dat
+	# force epoch quality parameter
 	df = DataFrame(;
-		min = minimum(fp),
-		max = maximum(fp),
-		peak_differences = peak_difference(force_profile_matrix;
+		min = minimum(fe),
+		max = maximum(fe),
+		peak_differences = peak_difference(force_matrix;
 			window_size = max_diff_windows_size),
 	)
 	tmp =
@@ -40,7 +40,7 @@ end;
 
 function aggregate(
 	# TODO generate methods with multiple IVs
-	fp::ForceProfiles{T};
+	fe::ForceEpochs{T};
 	condition::ColumnIndex = :all,
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
 	row_idx_column = :row,
@@ -48,13 +48,13 @@ function aggregate(
 ) where T<:AbstractFloat
 
 	# aggregate per subject
-	agg_forces = Matrix{T}(undef, 0, size(fp.dat, 2))
+	agg_forces = Matrix{T}(undef, 0, size(fe.dat, 2))
 	agg_baseline = T[]
-	rows = fp.design[:, row_idx_column]
+	rows = fe.design[:, row_idx_column]
 	if condition == :all
-		conditions = repeat([true], nrow(fp.design))
+		conditions = repeat([true], nrow(fe.design))
 	else
-		conditions = fp.design[:, condition]
+		conditions = fe.design[:, condition]
 	end
 	Tiv = eltype(unique(conditions)) # unique require to deal with CategoricalArrays
 
@@ -63,13 +63,13 @@ function aggregate(
 		for cond in unique(conditions)
 			push!(dsgn[condition], cond)
 			ids = findall(conditions .== cond)
-			agg_fp = agg_fnc(fp; rows=rows[ids])
-            agg_forces = vcat(agg_forces, agg_fp.dat)
-            append!(agg_baseline, agg_fp.baseline)
+			agg_fe = agg_fnc(fe; rows=rows[ids])
+            agg_forces = vcat(agg_forces, agg_fe.dat)
+            append!(agg_baseline, agg_fe.baseline)
 
 		end
 	else
-		subject_ids = fp.design[:, subject_id]
+		subject_ids = fe.design[:, subject_id]
 		Tsid = eltype(unique(subject_ids))
 		dsgn = Dict(condition => Tiv[], subject_id => Tsid[],
 			row_idx_column => Int64[])
@@ -78,35 +78,35 @@ function aggregate(
 				push!(dsgn[condition], cond)
 				push!(dsgn[subject_id], sid)
 				ids = findall(subject_ids .== sid .&& conditions .== cond)
-				agg_fp = agg_fnc(fp; rows=rows[ids])
-				agg_forces = vcat(agg_forces, agg_fp.dat)
-				append!(agg_baseline, agg_fp.baseline)
+				agg_fe = agg_fnc(fe; rows=rows[ids])
+				agg_forces = vcat(agg_forces, agg_fe.dat)
+				append!(agg_baseline, agg_fe.baseline)
 				end
 		end
 	end
 
 	dsgn[row_idx_column] = 1:length(dsgn[condition])
 	delete!(dsgn, :all)
-	return ForceProfiles(
-		agg_forces, fp.sr, DataFrame(dsgn), agg_baseline, fp.zero_sample)
+	return ForceEpochs(
+		agg_forces, fe.sr, DataFrame(dsgn), agg_baseline, fe.zero_sample)
 end;
 
-function subset(fp::ForceProfiles, rows::Base.AbstractVecOrTuple{Integer}; row_idx_column::String = "row")
-	force = fp.dat[rows, :]
-	bsln = fp.baseline[rows]
-	subset_design = fp.design[rows, :]
+function subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Integer}; row_idx_column::String = "row")
+	force = fe.dat[rows, :]
+	bsln = fe.baseline[rows]
+	subset_design = fe.design[rows, :]
 	subset_design[:, row_idx_column] = 1:nrow(subset_design) # renumber
-	return ForceProfiles(force, fp.sr, subset_design, bsln, fp.zero_sample)
+	return ForceEpochs(force, fe.sr, subset_design, bsln, fe.zero_sample)
 end
 
-function subset(fp::ForceProfiles, subset_design::DataFrame; row_idx_column::String = "row")
+function subset(fe::ForceEpochs, subset_design::DataFrame; row_idx_column::String = "row")
 	rows = subset_design[:, row_idx_column]
-	return subset(fp, convert(Vector{Int64}, rows); row_idx_column)
+	return subset(fe, convert(Vector{Int64}, rows); row_idx_column)
 end
 
-function subset(fp::ForceProfiles, args...; row_idx_column::String = "row")
-	df = subset(fp.design, args...)
+function subset(fe::ForceEpochs, args...; row_idx_column::String = "row")
+	df = subset(fe.design, args...)
 	rows = convert(Vector{Int64}, df[:, row_idx_column])
-	return subset(fp, rows; row_idx_column)
+	return subset(fe, rows; row_idx_column)
 end
 

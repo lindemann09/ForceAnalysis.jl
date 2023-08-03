@@ -8,41 +8,41 @@ function load(::Type{ForceData}, filename::String)
 	return convert(ForceData, load_object(filename))
 end;
 
-## Force profiles
+## Force epochs
 
-function save(filename::String, format::Symbol, fp::ForceProfiles; compress = true)
+function save(filename::String, format::Symbol, fe::ForceEpochs; compress = true)
 	filename = _check_suffix(filename, format)
 	if format == :jld2
-		jldsave(filename, compress; fp)
+		jldsave(filename, compress; fe)
 
 	elseif format == :csv
 		dataname = _dataname(filename)
 		ZipWriter(filename) do zipfl
 			zip_newfile(zipfl, dataname * ".forces.csv"; compress)
-			CSV.write(zipfl, CSV.Tables.table(fp.dat); writeheader = false)
+			CSV.write(zipfl, CSV.Tables.table(fe.dat); writeheader = false)
 
 			zip_newfile(zipfl, dataname * ".design.csv"; compress)
-			CSV.write(zipfl, fp.design)
+			CSV.write(zipfl, fe.design)
 
 			zip_newfile(zipfl, dataname * ".baseline.csv"; compress)
-			CSV.write(zipfl, CSV.Tables.table(fp.baseline); writeheader = false)
+			CSV.write(zipfl, CSV.Tables.table(fe.baseline); writeheader = false)
 
 			zip_newfile(zipfl, dataname * ".meta.json"; compress)
-			JSON.print(zipfl, Dict(:sampling_rate => fp.sampling_rate,
-					:zero_sample => fp.zero_sample), 1)
+			JSON.print(zipfl, Dict(:sampling_rate => fe.sampling_rate,
+					:zero_sample => fe.zero_sample), 1)
 		end
 	end
 	return nothing
 end
 
 # jld2 as default save method
-function save(filename::String, fp::ForceProfiles; compress = true)
-	save(filename, :jld2, fp; compress)
+function save(filename::String, fe::ForceEpochs; compress = true)
+	save(filename, :jld2, fe; compress)
 end
 
-function load(::Type{ForceProfiles}, format::Symbol, filename::String)
+function load(::Type{ForceEpochs}, format::Symbol, filename::String)
 	if format == :jld2
-		return convert(ForceProfiles, load_object(filename))
+		return convert(ForceEpochs, load_object(filename))
 	elseif format == :csv
 		dataname = _dataname(filename)
 
@@ -57,7 +57,7 @@ function load(::Type{ForceProfiles}, format::Symbol, filename::String)
         design = CSV.read(fl, DataFrame)
         close(zipfl)
 
-        return ForceProfiles(dat, meta["sampling_rate"], design,
+        return ForceEpochs(dat, meta["sampling_rate"], design,
 			vec(baseline), meta["zero_sample"])
 	else
 		_format_error(format)
@@ -65,7 +65,7 @@ function load(::Type{ForceProfiles}, format::Symbol, filename::String)
 end;
 
 # guess format, if not defined
-function load(::Type{ForceProfiles}, filename::String)
+function load(::Type{ForceEpochs}, filename::String)
 	format = :unknown
 	for (k, v) in fl_formats
 		if endswith(filename, v)
@@ -75,7 +75,7 @@ function load(::Type{ForceProfiles}, filename::String)
 	if format == :unknown
 		throw(DomainError(filename, "Please specify file format. Can't guess it from filename."))
 	end
-	return load(ForceProfiles, format, filename)
+	return load(ForceEpochs, format, filename)
 end
 
 

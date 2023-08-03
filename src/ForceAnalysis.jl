@@ -15,7 +15,7 @@ import FileIO: save, load
 
 export ForceData, # force data
     MultiForceData,
-    ForceProfiles,
+    ForceEpochs,
     force,
     duration,
     scale_force!,
@@ -23,11 +23,11 @@ export ForceData, # force data
     load,
     # preprocessing
     lowpass_filter!,
-    extract_force_profiles,
+    extract_force_epochs,
     adjust_baseline!,
     # processing
     peak_difference,
-    profile_parameter,
+    epoch_parameter,
     aggregate,
     subset,
     # response detection

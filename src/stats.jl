@@ -1,55 +1,55 @@
 
-function mean(fp::ForceProfiles;
+function mean(fe::ForceEpochs;
         rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
-        dat = mean(fp.dat, dims=1)
-        bsl = mean(fp.baseline)
+        dat = mean(fe.dat, dims=1)
+        bsl = mean(fe.baseline)
     else
-        dat = mean(fp.dat[rows, :], dims=1)
-        bsl = mean(fp.baseline[rows, :])
+        dat = mean(fe.dat[rows, :], dims=1)
+        bsl = mean(fe.baseline[rows, :])
     end
-    return ForceProfiles(dat, fp.sr, DataFrame(), [bsl], fp.zero_sample)
+    return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
 
-function median(fp::ForceProfiles;
+function median(fe::ForceEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
-        dat = median(fp.dat, dims=1)
-        bsl = median(fp.baseline)
+        dat = median(fe.dat, dims=1)
+        bsl = median(fe.baseline)
     else
-        dat = median(fp.dat[rows, :], dims=1)
-        bsl = median(fp.baseline[rows, :])
+        dat = median(fe.dat[rows, :], dims=1)
+        bsl = median(fe.baseline[rows, :])
     end
-    return ForceProfiles(dat, fp.sr, DataFrame(), [bsl], fp.zero_sample)
+    return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
 
-function var(fp::ForceProfiles;
+function var(fe::ForceEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
-        dat = var(fp.dat, dims=1)
-        bsl = var(fp.baseline)
+        dat = var(fe.dat, dims=1)
+        bsl = var(fe.baseline)
     else
-        dat = var(fp.dat[rows, :], dims=1)
-        bsl = var(fp.baseline[rows, :])
+        dat = var(fe.dat[rows, :], dims=1)
+        bsl = var(fe.baseline[rows, :])
     end
-    return ForceProfiles(dat, fp.sr, DataFrame(), [bsl], fp.zero_sample)
+    return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
 
-function std(fp::ForceProfiles;
+function std(fe::ForceEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
-        dat = std(fp.dat, dims=1)
-        bsl = std(fp.baseline)
+        dat = std(fe.dat, dims=1)
+        bsl = std(fe.baseline)
     else
-        dat = std(fp.dat[rows, :], dims=1)
-        bsl = std(fp.baseline[rows, :])
+        dat = std(fe.dat[rows, :], dims=1)
+        bsl = std(fe.baseline[rows, :])
     end
-    return ForceProfiles(dat, fp.sr, DataFrame(), [bsl], fp.zero_sample)
+    return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
 
 
-function diff(fp::ForceProfiles{T}; dims::Integer) where {T}
-    mtx = fp.dat
+function diff(fe::ForceEpochs{T}; dims::Integer) where {T}
+    mtx = fe.dat
     if dims == 1
         z = zeros(T, 1, size(mtx, 2))
         dat = vcat(z, diff(mtx; dims=1))
@@ -59,28 +59,20 @@ function diff(fp::ForceProfiles{T}; dims::Integer) where {T}
     else
         throw(ArgumentError("dims has to be 1 or 2 and not $dims"))
     end
-    return ForceProfiles(dat, fp.sr, fp.design, fp.baseline, fp.zero_sample)
+    return ForceEpochs(dat, fe.sr, fe.design, fe.baseline, fe.zero_sample)
 end;
 
 
-# function z_transform(fp::ForceProfiles; corrected::Bool=true)
-#     m = mean(fp.dat, dims=2)
-#     sd = std(fp.dat, dims=2, corrected=corrected)
-#     dat = (fp.dat .- m)./sd
-#     bsl = (fp.baseline .- vec(m))./vec(sd)
-#     return ForceProfiles(dat, fp.sr, fp.design, bsl, fp.zero_sample)
-# end
+"""
+    minimum(fe:ForceEpochs)
+
+Minimum of each epoch.
+"""
+minimum(fe::ForceEpochs) = return vec(minimum(fe.dat, dims=2))
 
 """
-    minimum(fp:ForceProfiles)
+    maximum(fe:ForceEpochs)
 
-Minimum of each profile.
+Minimum of each epoch.
 """
-minimum(fp::ForceProfiles) = return vec(minimum(fp.dat, dims=2))
-
-"""
-    maximum(fp:ForceProfiles)
-
-Minimum of each profile.
-"""
-maximum(fp::ForceProfiles) = return vec(maximum(fp.dat, dims=2))
+maximum(fe::ForceEpochs) = return vec(maximum(fe.dat, dims=2))

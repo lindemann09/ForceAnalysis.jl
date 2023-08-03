@@ -121,12 +121,12 @@ end
 
 
 function response_detection(
-	fp::ForceProfiles,
+	fe::ForceEpochs,
 	criterion::OnsetCriterion,
 )::Vector{ForceResponse}
 	# returns ForceResponse relative to zero sample
-	@unpack zero_sample = fp
-	return [response_detection(f, criterion; zero_sample) for f in eachrow(fp.dat)]
+	@unpack zero_sample = fe
+	return [response_detection(f, criterion; zero_sample) for f in eachrow(fe.dat)]
 end
 
 
@@ -183,13 +183,13 @@ function peak_force(
 end
 
 function peak_force(
-	fp::ForceProfiles,
+	fe::ForceEpochs,
 	rb::AbstractVector{ForceResponse},
 )
 	# takes into account zero samples
-	fp.n_profiles == length(rb) || throw(ArgumentError(
-		"Number of profiles and ForceResponse don't match!"))
-	return [peak_force(f, b) for (f, b) in zip(eachrow(fp.dat), rb)]
+	fe.n_epochs == length(rb) || throw(ArgumentError(
+		"Number of epochs and ForceResponse don't match!"))
+	return [peak_force(f, b) for (f, b) in zip(eachrow(fe.dat), rb)]
 end
 
 
@@ -204,12 +204,12 @@ function impulse_size(
 end
 
 function impulse_size(
-	fp::ForceProfiles,
+	fep::ForceEpochs,
 	rb::AbstractVector{ForceResponse},
 )
-	fp.n_profiles == length(rb) || throw(ArgumentError(
-		"Number of profiles and ForceResponse don't match!"))
-	return [impulse_size(f, b) for (f, b) in zip(eachrow(fp.dat), rb)]
+	fep.n_epochs == length(rb) || throw(ArgumentError(
+		"Number of epochs and ForceResponse don't match!"))
+	return [impulse_size(f, b) for (f, b) in zip(eachrow(fep.dat), rb)]
 end
 
 # helper
