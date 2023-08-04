@@ -32,7 +32,7 @@ function OnsetCriterion(;
 		AbstractFloat(min_increase_in_window), window_size)
 end
 
-function response_onset(
+function _response_onset(
 	force_vector::AbstractVector{<:AbstractFloat},
 	criterion::OnsetCriterion,
 )::Int
@@ -71,7 +71,7 @@ function response_onset(
 	return -1
 end
 
-function response_offset(
+function _response_offset(
 	force_vector::AbstractVector{<:AbstractFloat},
 	criterion::OnsetCriterion;
 	onset::Integer,
@@ -92,7 +92,7 @@ function response_offset(
 			end
 		end
 		# reverse data and find onset
-		rev_onset = response_onset(force_vector[l:-1:from], criterion)
+		rev_onset = _response_onset(force_vector[l:-1:from], criterion)
 		if rev_onset >= 0
 			return l - rev_onset
 		else
@@ -107,9 +107,9 @@ function response_detection(
 	zero_sample::Integer,
 )::ForceResponse
 	# returns ForceResponse relative to zero sample
-	onset = response_onset(force_vector, criterion)
+	onset = _response_onset(force_vector, criterion)
 	if onset >= 0
-		offset = response_offset(force_vector, criterion; onset)
+		offset = _response_offset(force_vector, criterion; onset)
 		if offset < 0
 			offset = missing
 		end
@@ -138,7 +138,8 @@ function duration(
 	if ismissing(rb.onset) || ismissing(rb.offset)
 		return missing
 	end
-	return duration(rb.offset - rb.onset; sampling_rate)
+	return (rb.offset - rb.onset) * (1000 / sampling_rate)
+
 end
 
 function duration(
@@ -173,7 +174,7 @@ function peak_force(
 	rb::ForceResponse,
 )
 	# returns (peak force, n sample to peak (reltive to onset))
-	resp = extract_response(force_vector, rb)
+	resp = _extract_response(force_vector, rb)
 	if isnothing(resp)
 		rtn = (missing, -1)
 	else
@@ -188,7 +189,7 @@ function peak_force(
 )
 	# takes into account zero samples
 	fe.n_epochs == length(rb) || throw(ArgumentError(
-		"Number of epochs and ForceResponse don't match!"))
+		"Number of epochs and ForceResponses don't match!"))
 	return [peak_force(f, b) for (f, b) in zip(eachrow(fe.dat), rb)]
 end
 
@@ -197,7 +198,7 @@ function impulse_size(
 	force_vector::AbstractVector{<:AbstractFloat},
 	rb::ForceResponse,
 )   # TODO not yet tested
-	resp = extract_response(force_vector, rb)
+	resp = _extract_response(force_vector, rb)
 	if !isnothing(resp)
 		return sum(skipmissing(resp .- resp[1]))
 	end
@@ -213,7 +214,7 @@ function impulse_size(
 end
 
 # helper
-function extract_response(
+function _extract_response(
 	force_vector::AbstractVector{<:AbstractFloat},
 	rb::ForceResponse,
 )

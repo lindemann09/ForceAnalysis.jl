@@ -17,13 +17,13 @@ export ForceData, # force data
     MultiForceData,
     ForceEpochs,
     force,
-    duration,
-    scale_force!,
+    # io
     save,
     load,
     # preprocessing
+    scale_force!,
     lowpass_filter!,
-    extract_force_epochs,
+    epochs,
     adjust_baseline!,
     # processing
     peak_difference,
@@ -34,12 +34,11 @@ export ForceData, # force data
     OnsetCriterion,
     ForceResponse,
     response_detection,
-    response_onset,
-    response_offset,
     peak_force,
     impulse_size,
+    duration,
     latency,
-    extract_response,
+    # force statistics
     minimum,
     maximum,
     mean,
@@ -48,7 +47,7 @@ export ForceData, # force data
     median,
     diff
 
-include("data_struct.jl")
+include("data_structs.jl")
 include("io.jl")
 include("stats.jl")
 include("preprocessing.jl")
