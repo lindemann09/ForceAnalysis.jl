@@ -1,3 +1,5 @@
+#### ForceData
+
 struct ForceData{T <: AbstractFloat}
 	dat::Vector{T} # force data
 	ts::Vector{Int} # timestamps
@@ -23,6 +25,16 @@ function Base.getproperty(x::ForceData, s::Symbol)
 	end
 end
 
+force(x::ForceData) = x.dat
+
+function Base.show(io::IO, mime::MIME"text/plain", x::ForceData)
+	println(io, "ForceData")
+	print(io, " $(x.n_samples) samples, sampling rate: $(x.sampling_rate)")
+end;
+
+
+
+#### MultiForceData
 
 struct MultiForceData{N, T <: AbstractFloat}
 	dat::Matrix{T} # force data
@@ -73,6 +85,7 @@ end
 
 Base.propertynames(::MultiForceData) = (:dat, :timestamps, :sampling_rate, :ids,
 	:meta, :n_samples)
+
 function Base.getproperty(x::MultiForceData, s::Symbol)
 	if s === :timestamps
 		return x.ts
@@ -85,6 +98,27 @@ function Base.getproperty(x::MultiForceData, s::Symbol)
 	end
 end
 
+force(x::MultiForceData, id::Int) = x.dat[:, id]
+force(x::MultiForceData, id::String) = force(x, Symbol(id))
+function force(x::MultiForceData, id::Symbol)
+	# returns force
+	idx = findfirst(x.ids .== id)
+	idx isa Integer || throw(ArgumentError(
+		"Can not find force data labelled '$(id)'"))
+	return force(x, idx)
+end
+
+function ForceData(x::MultiForceData, id::Union{Integer, Symbol, String})
+	return ForceData(force(x, id), x.ts, x.sr, x.meta)
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", x::MultiForceData)
+	println(io, "MultiForceData")
+	print(io, "  $(x.n_samples) samples, sampling rate: $(x.sampling_rate)")
+end;
+
+
+############  ForceEpochs
 
 struct ForceEpochs{T <: AbstractFloat}
 	dat::Matrix{T}
@@ -121,45 +155,12 @@ function Base.getproperty(x::ForceEpochs, s::Symbol)
 	end
 end
 
-
-force(x::ForceData) = x.dat
-force(x::ForceEpochs) = x.dat
-force(x::MultiForceData, id::Int) = x.dat[:, id]
-force(x::MultiForceData, id::String) = force(x, Symbol(id))
-
-function ForceData(x::MultiForceData, id::Union{Integer, Symbol, String})
-	return ForceData(force(x, id), x.ts, x.sr, x.meta)
-end
-
-function force(x::MultiForceData, id::Symbol)
-	# returns force
-	idx = findfirst(x.ids .== id)
-	idx isa Integer || throw(ArgumentError(
-		"Can not find force data labelled '$(id)'"))
-	return force(x, idx)
-end
-
-function duration(n_samples::Int; sampling_rate::Int)
-	# calculates n of samples into milliseconds duration
-	return n_samples * (1000 / sampling_rate)
-end
-
-
 function Base.copy(fe::ForceEpochs)
 	return ForceEpochs(copy(fe.dat), fe.sr, copy(fe.design),
 		copy(fe.baseline), fe.zero_sample)
 end
 
-
-function Base.show(io::IO, mime::MIME"text/plain", x::ForceData)
-	println(io, "ForceData")
-	print(io, " $(x.n_samples) samples, sampling rate: $(x.sampling_rate)")
-end;
-
-function Base.show(io::IO, mime::MIME"text/plain", x::MultiForceData)
-	println(io, "MultiForceData")
-	print(io, "  $(x.n_samples) samples, sampling rate: $(x.sampling_rate)")
-end;
+force(x::ForceEpochs) = x.dat
 
 
 function Base.show(io::IO, mime::MIME"text/plain", x::ForceEpochs)

@@ -26,8 +26,8 @@ function lowpass_filter!(fe::ForceEpochs{T};
 	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
 ) where T <: AbstractFloat
-	for i in 1:fe.n_epochs
-		fe.dat[i, :] = lowpass_filter(vec(fe.dat[i, :]);
+	for row in eachrow(fe.dat)
+		@inbounds row[:] = lowpass_filter(vec(row);
 			sampling_rate = fe.sr, cutoff_freq, butterworth_order)
 	end
 	return fe
@@ -37,33 +37,33 @@ function lowpass_filter!(fd::MultiForceData;
 	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
 )
-	for (i, d) in enumerate(eachcol(fd.dat))
-		fd.dat[i, :] = lowpass_filter(d;
+	for col in eachcol(fd.dat)
+		@inbounds col[:] = lowpass_filter(vec(col);
 			sampling_rate = fd.sr, cutoff_freq, butterworth_order)
 	end
 	return fd
 end;
 
-function extract_force_epochs(
+function epochs(
 	force_data::ForceData{T};
 	zero_times::AbstractVector{<:Integer},
 	n_samples::Integer,
 	n_samples_before::Integer,
 ) where T <: AbstractFloat
 	@unpack dat, ts = force_data
-	len_force = length(dat)
-	nrow = length(zero_times)
+	samples_fd = dat.n_samples # samples for data
+	n_epochs = length(zero_times)
 	ncol = n_samples_before + n_samples
-	force_mtx = Matrix{T}(undef, nrow, ncol)
-	for r in 1:nrow
-		i = _find_larger_or_equal(zero_times[r], ts)
+	force_mtx = Matrix{T}(undef, n_epochs, ncol)
+	for (r, zt) in enumerate(zero_times)
+		i = _find_larger_or_equal(zt, ts)
 		if i !== nothing
-			from = (i - n_samples_before)
-			to = (i + n_samples - 1)
-			if from < len_force
-				if to > len_force
+			from = i - n_samples_before
+			if from < samples_fd
+				to = i + n_samples - 1
+				if to > samples_fd
 					@warn "extract_force_epochs: last force epoch is incomplete"
-					force_mtx[r, :] .= vcat(dat[from:len_force], zeros(T, to - len_force))
+					force_mtx[r, :] .= vcat(dat[from:samples_fd], zeros(T, to - samples_fd))
 				else
 					force_mtx[r, :] .= dat[from:to]
 				end
@@ -71,7 +71,7 @@ function extract_force_epochs(
 		end
 	end
 	return ForceEpochs(force_mtx, force_data.sampling_rate,
-		DataFrame(), zeros(T, nrow), n_samples_before + 1)
+		DataFrame(), zeros(T, n_epochs), n_samples_before + 1)
 end;
 
 function scale_force!(fd::ForceData, factor::AbstractFloat)
@@ -85,9 +85,9 @@ function scale_force!(fe::ForceEpochs, factor::AbstractFloat)
 	return fe
 end
 
-function adjust_baseline!(fe::ForceEpochs; sample_range::UnitRange{<:Integer})
+function adjust_baseline!(fe::ForceEpochs, baseline_window::UnitRange{<:Integer})
 	dat = fe.dat .+ fe.baseline
-	bsl = mean(dat[:, sample_range], dims = 2)
+	bsl = mean(dat[:, baseline_window], dims = 2)
 	fe.dat[:, :] .= dat .- bsl
 	fe.baseline[:] .= bsl
 	return fe

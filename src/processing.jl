@@ -2,12 +2,12 @@ function peak_difference(force_mtx::Matrix{T};
 	window_size::Integer = 100
 ) where T<:AbstractFloat
 	# peak difference per row
-	(nr, nc) = size(force_mtx)
+	nc = size(force_mtx, 2)
 	rtn = T[]
-	for r in 1:nr
+	for row in eachrow(force_mtx)
 		peak = 0.0
 		for i in 1:(nc-window_size)
-			diff = abs(force_mtx[r, i+window_size] - force_mtx[r, i])
+			@inbounds diff = abs(row[i+window_size] - row[i])
 			if peak < diff
 				peak = diff
 			end
