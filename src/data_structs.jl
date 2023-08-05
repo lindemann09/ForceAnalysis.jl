@@ -63,7 +63,7 @@ end;
 
 function MultiForceData(
 	df::DataFrame;
-	sampling_rate::Integer,
+	sampling_rate::Real,
 	time_stamp_col::Union{Nothing, Symbol, String} = nothing,
 	meta::Dict = Dict(),
 )

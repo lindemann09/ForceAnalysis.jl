@@ -132,27 +132,28 @@ end
 
 function duration(
 	rb::ForceResponse;
-	sampling_rate::Int,
+	sampling_rate::Real,
 )
 	# returns response latency in millisecond
 	if ismissing(rb.onset) || ismissing(rb.offset)
 		return missing
 	end
-	return (rb.offset - rb.onset) * (1000 / sampling_rate)
-
+	return _duration((rb.offset - rb.onset), sampling_rate)
 end
 
 function duration(
 	vrb::AbstractVector{ForceResponse};
-	sampling_rate::Int,
+	sampling_rate::Real,
 )
-	return [duration(rb; sampling_rate) for rb in vrb]
+	return [_duration(rb, sampling_rate) for rb in vrb]
 end
+
+_duration(nsamples::Int64, sr::Float64) = nsamples * (1000.0 / sr)
 
 
 function latency(
 	rb::ForceResponse;
-	sampling_rate::Int,
+	sampling_rate::Real,
 )
 	# returns latency in millisecond
 	if ismissing(rb.onset)
@@ -163,7 +164,7 @@ end
 
 function latency(
 	vrb::AbstractVector{ForceResponse};
-	sampling_rate::Int,
+	sampling_rate::Real,
 )
 	return [latency(rb; sampling_rate) for rb in vrb]
 end
