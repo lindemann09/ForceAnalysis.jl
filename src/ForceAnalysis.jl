@@ -26,8 +26,8 @@ export ForceData, # force data
     epochs,
     adjust_baseline!,
     # processing
-    peak_difference,
-    epoch_parameter,
+    peak_differences,
+    epoch_rejection,
     aggregate,
     subset,
     # response detection

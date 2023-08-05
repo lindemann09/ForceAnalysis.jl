@@ -1,6 +1,6 @@
-function peak_difference(force_mtx::Matrix{T};
-	window_size::Integer = 100
-) where T<:AbstractFloat
+peak_differences(fe::ForceEpochs, window_size::Integer) = peak_differences(fe.dat, window_size)
+
+function peak_differences(force_mtx::Matrix{T}, window_size::Integer) where T <: AbstractFloat
 	# peak difference per row
 	nc = size(force_mtx, 2)
 	rtn = T[]
@@ -17,35 +17,29 @@ function peak_difference(force_mtx::Matrix{T};
 	return rtn
 end;
 
-function epoch_parameter(fe::ForceEpochs;
-	force_range::UnitRange = -400:400, # criteria for good trial
-	max_difference = 200, # criteria for good trial
-	max_diff_windows_size = 100,
+function epoch_rejection(fe::ForceEpochs;
+	force_range::UnitRange, # criteria for good trial
+	max_difference, # criteria for good trial
+	max_diff_windows_size
 )
-	force_matrix = fe.dat
-	# force epoch quality parameter
-	df = DataFrame(;
-		min = minimum(fe),
-		max = maximum(fe),
-		peak_differences = peak_difference(force_matrix;
-			window_size = max_diff_windows_size),
-	)
-	tmp =
-		df.min .> force_range.start .&&
-		df.max .< force_range.stop .&&
-		abs.(df.peak_differences) .< max_difference
-	df.good_trial = convert(Vector{Bool}, tmp)
-	return df
-end;
+	min = minimum(fe)
+	max = maximum(fe)
+	peak_differences = peak_differences(fe.dat, max_diff_windows_size)
+	good = min .>= force_range.start .||
+		  max .<= force_range.stop .||
+		  abs.(peak_differences) .<= max_difference
+	return subset(fe.design, good)
+end
+
 
 function aggregate(
 	# TODO generate methods with multiple IVs
 	fe::ForceEpochs{T};
 	condition::ColumnIndex = :all,
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
-	row_idx_column = :row,
+	row_idx_column = :row, ### FIXME NOT REQUIRED
 	agg_fnc = mean,
-) where T<:AbstractFloat
+) where T <: AbstractFloat
 
 	# aggregate per subject
 	agg_forces = Matrix{T}(undef, 0, size(fe.dat, 2))
@@ -63,9 +57,9 @@ function aggregate(
 		for cond in unique(conditions)
 			push!(dsgn[condition], cond)
 			ids = findall(conditions .== cond)
-			agg_fe = agg_fnc(fe; rows=rows[ids])
-            agg_forces = vcat(agg_forces, agg_fe.dat)
-            append!(agg_baseline, agg_fe.baseline)
+			agg_fe = agg_fnc(fe; rows = rows[ids])
+			agg_forces = vcat(agg_forces, agg_fe.dat)
+			append!(agg_baseline, agg_fe.baseline)
 
 		end
 	else
@@ -78,10 +72,10 @@ function aggregate(
 				push!(dsgn[condition], cond)
 				push!(dsgn[subject_id], sid)
 				ids = findall(subject_ids .== sid .&& conditions .== cond)
-				agg_fe = agg_fnc(fe; rows=rows[ids])
+				agg_fe = agg_fnc(fe; rows = rows[ids])
 				agg_forces = vcat(agg_forces, agg_fe.dat)
 				append!(agg_baseline, agg_fe.baseline)
-				end
+			end
 		end
 	end
 
@@ -91,11 +85,11 @@ function aggregate(
 		agg_forces, fe.sr, DataFrame(dsgn), agg_baseline, fe.zero_sample)
 end;
 
-function subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Integer}; row_idx_column::String = "row")
+function subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Integer}; row_idx_column::String = "row") ## FIXME see above "row" is not required
 	force = fe.dat[rows, :]
 	bsln = fe.baseline[rows]
 	subset_design = fe.design[rows, :]
-	subset_design[:, row_idx_column] = 1:nrow(subset_design) # renumber
+	subset_design[:, row_idx_column] = 1:nrow(subset_design) # renumber FIXME
 	return ForceEpochs(force, fe.sr, subset_design, bsln, fe.zero_sample)
 end
 

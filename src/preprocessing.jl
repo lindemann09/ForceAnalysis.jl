@@ -51,7 +51,7 @@ function epochs(
 	n_samples_before::Integer,
 ) where T <: AbstractFloat
 	@unpack dat, ts = force_data
-	samples_fd = dat.n_samples # samples for data
+	samples_fd = force_data.n_samples # samples for data
 	n_epochs = length(zero_times)
 	ncol = n_samples_before + n_samples
 	force_mtx = Matrix{T}(undef, n_epochs, ncol)

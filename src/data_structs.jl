@@ -3,10 +3,10 @@
 struct ForceData{T <: AbstractFloat}
 	dat::Vector{T} # force data
 	ts::Vector{Int} # timestamps
-	sr::Int # sampling_rate
+	sr::Float64
 	meta::Dict
 
-	function ForceData(dat::Vector{T}, ts::Vector{Int}, sr::Int, meta::Dict) where {T}
+	function ForceData(dat::Vector{T}, ts::Vector{Int}, sr::Real, meta::Dict) where {T}
 		check_timestamps(ts, length(dat))
 		return new{T}(dat, ts, sr, meta)
 	end
@@ -39,11 +39,11 @@ end;
 struct MultiForceData{N, T <: AbstractFloat}
 	dat::Matrix{T} # force data
 	ts::Vector{Int} # timestamps
-	sr::Int # sampling rate
+	sr::Float64
 	ids::NTuple{N, Symbol} # ids/labels
 	meta::Dict
 
-	function MultiForceData(dat::Matrix{T}, ts::Vector{Int}, sr::Int,
+	function MultiForceData(dat::Matrix{T}, ts::Vector{Int}, sr::Real,
 		ids::Vector, meta::Dict) where {T}
 		check_timestamps(ts, size(dat, 1))
 		N = size(dat, 2)
@@ -122,12 +122,12 @@ end;
 
 struct ForceEpochs{T <: AbstractFloat}
 	dat::Matrix{T}
-	sr::Int # sampling rate
+	sr::Float64
 	design::DataFrame
 	baseline::Vector{T}
 	zero_sample::Int
 
-	function ForceEpochs(force::Matrix{T}, sr::Int, design::DataFrame,
+	function ForceEpochs(force::Matrix{T}, sr::Real, design::DataFrame,
 		baseline::Vector{T}, zero_sample::Int) where {T <: AbstractFloat}
 		lf = size(force, 1)
 		lb = length(baseline)
