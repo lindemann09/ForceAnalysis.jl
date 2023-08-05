@@ -1,5 +1,11 @@
 
-function mean(fe::ForceEpochs;
+"""
+    mean(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+
+Computes the mean of the epochs, i.e., column-wise means for each sample.
+If `rows` is defined, only the selected rows are considered.
+"""
+function Statistics.mean(fe::ForceEpochs;
         rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         dat = mean(fe.dat, dims=1)
@@ -11,7 +17,13 @@ function mean(fe::ForceEpochs;
     return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
 
-function median(fe::ForceEpochs;
+"""
+    median(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+
+Computes the median of the epochs, i.e., column-wise medians for each sample.
+If `rows` is defined, only the selected rows are considered.
+"""
+function Statistics.median(fe::ForceEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         dat = median(fe.dat, dims=1)
@@ -23,7 +35,13 @@ function median(fe::ForceEpochs;
     return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
 
-function var(fe::ForceEpochs;
+"""
+    var(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+
+Computes the variance of the epochs, i.e., column-wise variances for each sample.
+If `rows` is defined, only the selected rows are considered.
+"""
+function Statistics.var(fe::ForceEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         dat = var(fe.dat, dims=1)
@@ -35,7 +53,13 @@ function var(fe::ForceEpochs;
     return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
 
-function std(fe::ForceEpochs;
+"""
+    std(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+
+Computes the standard deviation of the epochs, i.e., column-wise standard
+deviations for each sample. If `rows` is defined, only the selected rows are considered.
+"""
+function Statistics.std(fe::ForceEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         dat = std(fe.dat, dims=1)
@@ -48,7 +72,7 @@ function std(fe::ForceEpochs;
 end
 
 
-function diff(fe::ForceEpochs{T}; dims::Integer) where {T}
+function Base.diff(fe::ForceEpochs{T}; dims::Integer) where {T}
     mtx = fe.dat
     if dims == 1
         z = zeros(T, 1, size(mtx, 2))
@@ -68,11 +92,11 @@ end;
 
 Minimum of each epoch.
 """
-minimum(fe::ForceEpochs) = return vec(minimum(fe.dat, dims=2))
+Base.minimum(fe::ForceEpochs) = return vec(minimum(fe.dat, dims=2))
 
 """
     maximum(fe:ForceEpochs)
 
 Minimum of each epoch.
 """
-maximum(fe::ForceEpochs) = return vec(maximum(fe.dat, dims=2))
+Base.maximum(fe::ForceEpochs) = return vec(maximum(fe.dat, dims=2))

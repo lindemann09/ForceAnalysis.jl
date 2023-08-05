@@ -1,16 +1,37 @@
 fl_formats = Dict(:jld2 => ".jld2", :csv => ".csv.zip")
 
-function save(filename::String, forces::ForceData)
-	return jldsave(_check_suffix(filename, :jld2), true; forces)
+"""
+	save(filename::String, fd::ForceData; compress = true)
+	save(filename::String, [format::Symbol], fe::ForceEpochs; compress = true)
+
+Saves `ForceData` or `ForceEpochs` as jld2 file.
+
+For `ForceEpochs` the format can be optionally specified:
+* `:jld2`: jld2 file
+* `:csv`: creates a Zip-file containing seperate csv-data for `forces`, `design`,
+		 `baseline` and a json file with `sampling_rate` and `zero_times`
+"""
+function FileIO.save(filename::String, fd::ForceData; compress = true)
+	return jldsave(_check_suffix(filename, :jld2), compress; fd)
 end
 
-function load(::Type{ForceData}, filename::String)
+
+"""
+	load(::Type{ForceData}, filename::String)
+	load(::Type{ForceEpochs}, [format::Symbol], filename::String)
+
+Loads `ForceData` or `ForceEpochs` as jdl2 file.
+
+If the format of the `ForceEpochs` is not specified, it will be infered from the
+filename suffix.
+"""
+function FileIO.load(::Type{ForceData}, filename::String)
 	return convert(ForceData, load_object(filename))
 end;
 
 ## Force epochs
 
-function save(filename::String, format::Symbol, fe::ForceEpochs; compress = true)
+function FileIO.save(filename::String, format::Symbol, fe::ForceEpochs; compress = true)
 	filename = _check_suffix(filename, format)
 	if format == :jld2
 		jldsave(filename, compress; fe)
@@ -36,28 +57,28 @@ function save(filename::String, format::Symbol, fe::ForceEpochs; compress = true
 end
 
 # jld2 as default save method
-function save(filename::String, fe::ForceEpochs; compress = true)
+function FileIO.save(filename::String, fe::ForceEpochs; compress = true)
 	save(filename, :jld2, fe; compress)
 end
 
-function load(::Type{ForceEpochs}, format::Symbol, filename::String)
+function FileIO.load(::Type{ForceEpochs}, format::Symbol, filename::String)
 	if format == :jld2
 		return convert(ForceEpochs, load_object(filename))
 	elseif format == :csv
 		dataname = _dataname(filename)
 
 		zipfl = zip_open_filereader(filename)
-        txt = zip_readentry(zipfl, dataname * ".meta.json", String)
-        meta = JSON.parse(txt)
-        fl = zip_openentry(zipfl, dataname * ".forces.csv")
-        dat = CSV.read(fl, CSV.Tables.matrix; header = false)
-        fl = zip_openentry(zipfl, dataname * ".baseline.csv")
-        baseline = CSV.read(fl, CSV.Tables.matrix; header = false)
-        fl = zip_openentry(zipfl, dataname * ".design.csv")
-        design = CSV.read(fl, DataFrame)
-        close(zipfl)
+		txt = zip_readentry(zipfl, dataname * ".meta.json", String)
+		meta = JSON.parse(txt)
+		fl = zip_openentry(zipfl, dataname * ".forces.csv")
+		dat = CSV.read(fl, CSV.Tables.matrix; header = false)
+		fl = zip_openentry(zipfl, dataname * ".baseline.csv")
+		baseline = CSV.read(fl, CSV.Tables.matrix; header = false)
+		fl = zip_openentry(zipfl, dataname * ".design.csv")
+		design = CSV.read(fl, DataFrame)
+		close(zipfl)
 
-        return ForceEpochs(dat, meta["sampling_rate"], design,
+		return ForceEpochs(dat, meta["sampling_rate"], design,
 			vec(baseline), meta["zero_sample"])
 	else
 		_format_error(format)
@@ -65,7 +86,7 @@ function load(::Type{ForceEpochs}, format::Symbol, filename::String)
 end;
 
 # guess format, if not defined
-function load(::Type{ForceEpochs}, filename::String)
+function FileIO.load(::Type{ForceEpochs}, filename::String)
 	format = :unknown
 	for (k, v) in fl_formats
 		if endswith(filename, v)

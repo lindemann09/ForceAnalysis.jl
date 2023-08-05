@@ -1,37 +1,13 @@
-name = "ForceAnalysis"
-uuid = "253e1fb9-e260-4ab3-92cb-ad0757323424"
-authors = ["Oliver Lindemann"]
-version = "0.3.11-DEV"
-
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
 CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 ZipArchives = "49080126-0e18-4c2a-b176-c102e4b3760c"
-
-[compat]
-CSV = "0.10"
-CategoricalArrays = "0.10"
-CodecZlib = "0.7"
-DSP = "0.7"
-DataFrames = "1"
-FileIO = "1"
-JLD2 = "0.4"
-JSON = "0.21"
-UnPack = "1"
-ZipArchives = "0.5"
-julia = "1"
-
-[extras]
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test", "Aqua"]

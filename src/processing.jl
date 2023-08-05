@@ -17,10 +17,16 @@ function peak_differences(force_mtx::Matrix{T}, window_size::Integer) where T <:
 	return rtn
 end;
 
+"""
+	epoch_rejection(fe::ForceEpochs; force_range::UnitRange, max_difference::Integer,
+		max_diff_windows_size::Integer)
+
+TODO
+"""
 function epoch_rejection(fe::ForceEpochs;
 	force_range::UnitRange, # criteria for good trial
-	max_difference, # criteria for good trial
-	max_diff_windows_size
+	max_difference::Integer, # criteria for good trial
+	max_diff_windows_size::Integer
 )
 	min = minimum(fe)
 	max = maximum(fe)
@@ -32,12 +38,17 @@ function epoch_rejection(fe::ForceEpochs;
 end
 
 
-function aggregate(
+"""
+	aggregate(fe::ForceEpochs; condition::ColumnIndex = :all,
+		subject_id::Union{Nothing, ColumnIndex} = nothing, agg_fnc::Function = mean)
+TODO
+"""
+function DataFrames.aggregate(
 	# TODO generate methods with multiple IVs
 	fe::ForceEpochs{T};
 	condition::ColumnIndex = :all,
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
-	agg_fnc = mean,
+	agg_fnc::Function = mean,
 ) where T <: AbstractFloat
 
 	# aggregate per subject
@@ -82,15 +93,21 @@ function aggregate(
 		agg_forces, fe.sr, DataFrame(dsgn), agg_baseline, fe.zero_sample)
 end;
 
-function subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Integer})
+
+"""
+	subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Integer})
+	subset(fe::ForceEpochs, args...)
+
+TODO
+"""
+function DataFrames.subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Integer})
 	force = fe.dat[rows, :]
 	bsln = fe.baseline[rows]
 	subset_design = fe.design[rows, :]
 	return ForceEpochs(force, fe.sr, subset_design, bsln, fe.zero_sample)
 end
 
-
-function subset(fe::ForceEpochs, args...)
+function DataFrames.subset(fe::ForceEpochs, args...)
 	df = copy(fe.design)
 	df.row_xxx .= 1:nrow(df)
 	df = subset(df, args...)

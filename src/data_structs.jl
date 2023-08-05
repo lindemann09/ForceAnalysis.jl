@@ -1,5 +1,9 @@
 #### ForceData
+"""
+	ForceData{T <: AbstractFloat}
 
+TODO
+"""
 struct ForceData{T <: AbstractFloat}
 	dat::Vector{T} # force data
 	ts::Vector{Int} # timestamps
@@ -13,19 +17,26 @@ struct ForceData{T <: AbstractFloat}
 end;
 
 Base.propertynames(::ForceData) = (:dat, :timestamps, :sampling_rate, :meta, :n_samples)
-function Base.getproperty(x::ForceData, s::Symbol)
+function Base.getproperty(fd::ForceData, s::Symbol)
 	if s === :timestamps
-		return x.ts
+		return fd.ts
 	elseif s === :sampling_rate
-		return x.sr
+		return fd.sr
 	elseif s === :n_samples
-		return length(x.dat)
+		return length(fd.dat)
 	else
-		return getfield(x, s)
+		return getfield(fd, s)
 	end
 end
 
-force(x::ForceData) = x.dat
+"""
+	force(fd::ForceData)
+	force(fd::MultiForceData, id::Union{Int, String, Symbol})
+	force(fe::ForceEpochs)
+
+Returns the force data as `Matrix` or `Vector`.
+"""
+force(fd::ForceData) = fd.dat
 
 function Base.show(io::IO, mime::MIME"text/plain", x::ForceData)
 	println(io, "ForceData")
@@ -35,7 +46,11 @@ end;
 
 
 #### MultiForceData
+"""
+	MultiForceData{T <: AbstractFloat}
 
+TODO
+"""
 struct MultiForceData{N, T <: AbstractFloat}
 	dat::Matrix{T} # force data
 	ts::Vector{Int} # timestamps
@@ -98,18 +113,21 @@ function Base.getproperty(x::MultiForceData, s::Symbol)
 	end
 end
 
-force(x::MultiForceData, id::Int) = x.dat[:, id]
-force(x::MultiForceData, id::String) = force(x, Symbol(id))
-function force(x::MultiForceData, id::Symbol)
-	# returns force
-	idx = findfirst(x.ids .== id)
-	idx isa Integer || throw(ArgumentError(
-		"Can not find force data labelled '$(id)'"))
-	return force(x, idx)
+function force(fd::MultiForceData, id::Union{Int,String,Symbol})
+	if id isa Int
+		return fd.dat[:, id]
+	else
+		# returns force
+		idx = findfirst(fd.ids .== Symbol(id))
+		idx isa Integer || throw(ArgumentError(
+			"Can not find force data labelled '$(id)'"))
+		return force(fd, idx)
+	end
 end
 
-function ForceData(x::MultiForceData, id::Union{Integer, Symbol, String})
-	return ForceData(force(x, id), x.ts, x.sr, x.meta)
+
+function ForceData(fd::MultiForceData, id::Union{Integer, Symbol, String})
+	return ForceData(force(fd, id), fd.ts, fd.sr, fd.meta)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", x::MultiForceData)
@@ -120,6 +138,11 @@ end;
 
 ############  ForceEpochs
 
+"""
+	ForceEpochs{T <: AbstractFloat}
+
+TODO
+"""
 struct ForceEpochs{T <: AbstractFloat}
 	dat::Matrix{T}
 	sr::Float64
@@ -155,12 +178,17 @@ function Base.getproperty(x::ForceEpochs, s::Symbol)
 	end
 end
 
+"""
+	copy(fe::ForceEpochs)
+
+TODO
+"""
 function Base.copy(fe::ForceEpochs)
 	return ForceEpochs(copy(fe.dat), fe.sr, copy(fe.design),
 		copy(fe.baseline), fe.zero_sample)
 end
 
-force(x::ForceEpochs) = x.dat
+force(fe::ForceEpochs) = fe.dat
 
 
 function Base.show(io::IO, mime::MIME"text/plain", x::ForceEpochs)

@@ -3,6 +3,7 @@ const ColumnIndex = Union{Symbol, AbstractString}
 #     ColumnIndex, AbstractVector{<:ColumnIndex},Tuple{<:ColumnIndex}
 # }
 
+
 function lowpass_filter(dat::AbstractVector{<:AbstractFloat};
 	sampling_rate::Real,
 	cutoff_freq::Real,
@@ -13,6 +14,13 @@ function lowpass_filter(dat::AbstractVector{<:AbstractFloat};
 	return filtfilt(myfilter, dat .- dat[1]) .+ dat[1]  # filter centered data
 end;
 
+"""
+	lowpass_filter!(fd::ForceData; cutoff_freq::Real,butterworth_order::Integer = 4)
+	lowpass_filter!(fd::MultiForceData; cutoff_freq::Real,butterworth_order::Integer = 4)
+	lowpass_filter!(fd::ForceEpochs; cutoff_freq::Real,butterworth_order::Integer = 4)
+
+TODO
+"""
 function lowpass_filter!(fd::ForceData;
 	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
@@ -22,10 +30,10 @@ function lowpass_filter!(fd::ForceData;
 	return fd
 end;
 
-function lowpass_filter!(fe::ForceEpochs{T};
+function lowpass_filter!(fe::ForceEpochs;
 	cutoff_freq::Real,
 	butterworth_order::Integer = 4,
-) where T <: AbstractFloat
+)
 	for row in eachrow(fe.dat)
 		@inbounds row[:] = lowpass_filter(vec(row);
 			sampling_rate = fe.sr, cutoff_freq, butterworth_order)
@@ -44,14 +52,22 @@ function lowpass_filter!(fd::MultiForceData;
 	return fd
 end;
 
+
+"""
+	epochs(fd::ForceData{<: AbstractFloat};
+		zero_times::AbstractVector{<:Integer},
+		n_samples::Integer,	n_samples_before::Integer)
+
+TODO
+"""
 function epochs(
-	force_data::ForceData{T};
+	fd::ForceData{T};
 	zero_times::AbstractVector{<:Integer},
 	n_samples::Integer,
 	n_samples_before::Integer,
 ) where T <: AbstractFloat
-	@unpack dat, ts = force_data
-	samples_fd = force_data.n_samples # samples for data
+	@unpack dat, ts = fd
+	samples_fd = fd.n_samples # samples for data
 	n_epochs = length(zero_times)
 	ncol = n_samples_before + n_samples
 	force_mtx = Matrix{T}(undef, n_epochs, ncol)
@@ -70,21 +86,32 @@ function epochs(
 			end
 		end
 	end
-	return ForceEpochs(force_mtx, force_data.sampling_rate,
+	return ForceEpochs(force_mtx, fd.sampling_rate,
 		DataFrame(), zeros(T, n_epochs), n_samples_before + 1)
 end;
 
-function scale_force!(fd::ForceData, factor::AbstractFloat)
+"""
+	scale_force!(fd::ForceData, factor::Real)
+	scale_force!(fe::ForceEpochs, factor::Real)
+
+TODO
+"""
+function scale_force!(fd::ForceData, factor::Real)
 	fd.dat[:] = fd.dat .* factor
 	return fd
 end
 
-function scale_force!(fe::ForceEpochs, factor::AbstractFloat)
+function scale_force!(fe::ForceEpochs, factor::Real)
 	fe.dat[:, :] = fe.dat .* factor
 	fe.baseline[:] = fe.baseline .* factor
 	return fe
 end
 
+"""
+	adjust_baseline!(fe::ForceEpochs, baseline_window::UnitRange{<:Integer})
+
+TODO
+"""
 function adjust_baseline!(fe::ForceEpochs, baseline_window::UnitRange{<:Integer})
 	dat = fe.dat .+ fe.baseline
 	bsl = mean(dat[:, baseline_window], dims = 2)

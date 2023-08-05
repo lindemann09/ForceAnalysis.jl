@@ -1,3 +1,8 @@
+"""
+	OnsetCriterion{T <: AbstractFloat}
+
+TODO
+"""
 struct OnsetCriterion{T <: AbstractFloat}
 	min_increase::T  # min change between two samples
 	min_increase_in_window::T
@@ -10,6 +15,11 @@ struct OnsetCriterion{T <: AbstractFloat}
 	end
 end;
 
+"""
+	ForceResponse
+
+TODO
+"""
 struct ForceResponse
 	onset::Union{Missing, Int}
 	offset::Union{Missing, Int}
@@ -101,6 +111,13 @@ function _response_offset(
 	end
 end
 
+"""
+	response_detection(force_vector::AbstractVector{<:AbstractFloat}, criterion::OnsetCriterion; zero_sample::Integer)::ForceResponse
+	response_detection(fe::ForceEpochs, criterion::OnsetCriterion)::Vector{ForceResponse}
+
+Returns a `ForceResponse` or `Vector{ForceResponse}`
+TODO
+"""
 function response_detection(
 	force_vector::AbstractVector{<:AbstractFloat},
 	criterion::OnsetCriterion;
@@ -130,6 +147,13 @@ function response_detection(
 end
 
 
+"""
+	duration(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
+	duration(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
+
+TODO
+"""
+
 function duration(
 	rb::ForceResponse;
 	sampling_rate::Real,
@@ -148,6 +172,12 @@ function duration(
 	return [latency(rb; sampling_rate) for rb in vrb]
 end
 
+"""
+	latency(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
+	latency(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
+
+TODO
+"""
 function latency(
 	rb::ForceResponse;
 	sampling_rate::Real,
@@ -166,6 +196,13 @@ function latency(
 	return [latency(rb; sampling_rate) for rb in vrb]
 end
 
+
+"""
+	peak_force(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
+	peak_force(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
+
+TODO
+"""
 
 function peak_force(
 	force_vector::AbstractVector{<:AbstractFloat},
@@ -192,8 +229,13 @@ function peak_force(
 end
 
 
-function impulse_size(
-	force_vector::AbstractVector{<:AbstractFloat},
+"""
+	impulse_size(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
+	impulse_size(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
+
+TODO
+"""
+function impulse_size(force_vector::AbstractVector{<:AbstractFloat},
 	rb::ForceResponse,
 )   # TODO not yet tested
 	resp = _extract_response(force_vector, rb)
@@ -203,12 +245,12 @@ function impulse_size(
 end
 
 function impulse_size(
-	fep::ForceEpochs,
+	fp::ForceEpochs,
 	rb::AbstractVector{ForceResponse},
 )
-	fep.n_epochs == length(rb) || throw(ArgumentError(
+	fp.n_epochs == length(rb) || throw(ArgumentError(
 		"Number of epochs and ForceResponse don't match!"))
-	return [impulse_size(f, b) for (f, b) in zip(eachrow(fep.dat), rb)]
+	return [impulse_size(f, b) for (f, b) in zip(eachrow(fp.dat), rb)]
 end
 
 # helper

@@ -6,12 +6,10 @@ using DataFrames
 using JLD2, CodecZlib
 using CSV, JSON
 using ZipArchives
+using FileIO
+using CategoricalArrays: unique
 
-import Base: minimum, maximum, diff
-import DataFrames: subset, aggregate
-import CategoricalArrays: unique
-import Statistics: mean, median, var, std
-import FileIO: save, load
+using Statistics
 
 export ForceData, # force data
     MultiForceData,
