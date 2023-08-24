@@ -14,6 +14,7 @@ function Statistics.mean(fe::ForceEpochs;
         dat = mean(fe.dat[rows, :], dims=1)
         bsl = mean(fe.baseline[rows, :])
     end
+
     return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
 
@@ -29,8 +30,14 @@ function Statistics.median(fe::ForceEpochs;
         dat = median(fe.dat, dims=1)
         bsl = median(fe.baseline)
     else
-        dat = median(fe.dat[rows, :], dims=1)
-        bsl = median(fe.baseline[rows, :])
+        if length(rows) != 0
+            dat = median(fe.dat[rows, :], dims=1)
+            bsl = median(fe.baseline[rows, :])
+        else
+            dat = Matrix{eltype(fe.dat)}(undef, 1, size(fe.dat,2))
+            fill!(dat, NaN)
+            bsl = NaN
+        end
     end
     return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
 end
