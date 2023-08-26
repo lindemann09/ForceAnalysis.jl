@@ -12,4 +12,8 @@ makedocs(
     ],
 )
 
-#deploydocs(; repo = "github.com/lindemann09/ForceAnalysis.jl", push_preview = true)
+deploydocs(;
+    repo = "github.com/lindemann09/ForceAnalysis.jl",
+    push_preview = true,
+    devbranch="main"
+)
