@@ -4,8 +4,6 @@ using UnPack
 using DSP # signal processing, filtering
 using DataFrames
 using JLD2, CodecZlib
-using CSV, JSON
-using ZipArchives
 using FileIO
 using CategoricalArrays: unique
 
@@ -43,7 +41,12 @@ export ForceData, # force data
     std,
     var,
     median,
-    diff
+    diff,
+    # plotting
+    highlight_ranges!,
+    plot_av_epoch!,
+	plot_good_bad!,
+	highlight_ranges!
 
 include("data_structs.jl")
 include("io.jl")
@@ -51,5 +54,20 @@ include("stats.jl")
 include("preprocessing.jl")
 include("processing.jl")
 include("response_detection.jl")
+
+## extensions
+_makie_error() = throw(ArgumentError("Have you loaded an appropriate Makie backend?"))
+highlight_ranges!(::Any, ::Any, ::Any; kwargs...) = _makie_error()
+plot_good_bad!(::Any, ::ForceEpochs; kwargs...) = _makie_error()
+plot_av_epoch!(::Any, ::ForceEpochs; kwargs...) = _makie_error()
+
+if !isdefined(Base, :get_extension)
+    include("../ext/ForceMakieExt.jl")
+end
+
+if !isdefined(Base, :get_extension)
+    include("../ext/CSVFilesExt.jl")
+end
+
 
 end

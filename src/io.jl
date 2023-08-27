@@ -35,26 +35,12 @@ function FileIO.save(filename::String, format::Symbol, fe::ForceEpochs; compress
 	filename = _check_suffix(filename, format)
 	if format == :jld2
 		jldsave(filename, compress; fe)
-
 	elseif format == :csv
-		dataname = _dataname(filename)
-		ZipWriter(filename) do zipfl
-			zip_newfile(zipfl, dataname * ".forces.csv"; compress)
-			CSV.write(zipfl, CSV.Tables.table(fe.dat); writeheader = false)
-
-			zip_newfile(zipfl, dataname * ".design.csv"; compress)
-			CSV.write(zipfl, fe.design)
-
-			zip_newfile(zipfl, dataname * ".baseline.csv"; compress)
-			CSV.write(zipfl, CSV.Tables.table(fe.baseline); writeheader = false)
-
-			zip_newfile(zipfl, dataname * ".meta.json"; compress)
-			JSON.print(zipfl, Dict(:sampling_rate => fe.sampling_rate,
-					:zero_sample => fe.zero_sample), 1)
-		end
+		save_csv(filename, compress; fe)
 	end
-	return nothing
 end
+
+
 
 # jld2 as default save method
 function FileIO.save(filename::String, fe::ForceEpochs; compress = true)
@@ -65,21 +51,7 @@ function FileIO.load(::Type{ForceEpochs}, format::Symbol, filename::String)
 	if format == :jld2
 		return convert(ForceEpochs, load_object(filename))
 	elseif format == :csv
-		dataname = _dataname(filename)
-
-		zipfl = zip_open_filereader(filename)
-		txt = zip_readentry(zipfl, dataname * ".meta.json", String)
-		meta = JSON.parse(txt)
-		fl = zip_openentry(zipfl, dataname * ".forces.csv")
-		dat = CSV.read(fl, CSV.Tables.matrix; header = false)
-		fl = zip_openentry(zipfl, dataname * ".baseline.csv")
-		baseline = CSV.read(fl, CSV.Tables.matrix; header = false)
-		fl = zip_openentry(zipfl, dataname * ".design.csv")
-		design = CSV.read(fl, DataFrame)
-		close(zipfl)
-
-		return ForceEpochs(dat, meta["sampling_rate"], design,
-			vec(baseline), meta["zero_sample"])
+		return load_csv(filename)
 	else
 		_format_error(format)
 	end
@@ -100,11 +72,14 @@ function FileIO.load(::Type{ForceEpochs}, filename::String)
 end
 
 
+_csv_error() = throw(ArgumentError(
+	"To save CSV, please load the following modules: CSV, JSON and ZipArchives."))
+save_csv(::Any, ::ForceEpochs; kwargs...) = _csv_error()
+load_csv(::Any; kwargs...) = _csv_error()
+
 ## helper
 _format_error(format) = throw(DomainError(format,
 	"Unkown fileformat. Possible formats are $(keys(fl_formats))"))
-
-_dataname(flname) = first(split(last(splitdir(flname)), "."))
 
 function _check_suffix(flname::AbstractString, format::Symbol)
 	# ensure correct suffix based on format
