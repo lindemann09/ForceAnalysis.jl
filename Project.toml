@@ -35,6 +35,7 @@ ForceMakieExt = ["Colors", "Makie", "PlotUtils"]
 CSV = "0.10"
 CategoricalArrays = "0.10"
 CodecZlib = "0.7"
+Colors = "0.12"
 DSP = "0.7"
 DataFrames = "1"
 FileIO = "1"
