@@ -28,8 +28,8 @@ PlotUtils = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 ZipArchives = "49080126-0e18-4c2a-b176-c102e4b3760c"
 
 [extensions]
-CSVFilesExt = ["CSV", "JSON", "ZipArchives"]
 ForceMakieExt = ["Colors", "Makie", "PlotUtils"]
+CSVFilesExt = ["CSV", "JSON", "ZipArchives"]
 
 [compat]
 CSV = "0.10"
@@ -41,6 +41,7 @@ DataFrames = "1"
 FileIO = "1"
 JLD2 = "0.4"
 JSON = "0.21"
+PlotUtils = "1"
 Makie = "0.19"
 UnPack = "1"
 ZipArchives = "0.5"
