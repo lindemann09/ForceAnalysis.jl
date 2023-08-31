@@ -88,12 +88,18 @@ function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::ForceEpochs;
 		highlight_ranges!(ax, highlight_ranges, highlight_color)
 	end
 
-	agg_forces = aggregate(fe; condition, agg_fnc = agg_fnc)
-	cond = agg_forces.design[:, condition]
-	if stdev
-		sd_forces = aggregate(fe; condition, agg_fnc = std)
-	else
+	if 	condition == :all
+		agg_forces = aggregate(fe; agg_fnc = agg_fnc)
+		cond = [:all]
 		sd_forces = nothing
+ 	else
+		agg_forces = aggregate(fe; condition, agg_fnc = agg_fnc)
+		cond = agg_forces.design[:, condition]
+		if stdev
+			sd_forces = aggregate(fe; condition, agg_fnc = std)
+		else
+			sd_forces = nothing
+		end
 	end
 
 	if isnothing(colors)
