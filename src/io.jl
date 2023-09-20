@@ -36,7 +36,7 @@ function FileIO.save(filename::String, format::Symbol, fe::ForceEpochs; compress
 	if format == :jld2
 		jldsave(filename, compress; fe)
 	elseif format == :csv
-		save_csv(filename, compress; fe)
+		save_csv(filename, fe; compress)
 	end
 end
 
