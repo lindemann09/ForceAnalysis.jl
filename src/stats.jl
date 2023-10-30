@@ -79,6 +79,27 @@ function Statistics.std(fe::ForceEpochs;
 end
 
 
+"""
+    sderr(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+
+Computes the standard error of the epochs, i.e., column-wise standard
+deviations for each sample. If `rows` is defined, only the selected rows are considered.
+"""
+function sderr(fe::ForceEpochs;
+    rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+    if isnothing(rows)
+        n = size(fe.dat, 1)
+        dat = std(fe.dat, dims=1)
+        bsl = std(fe.baseline)
+    else
+        n = size(fe.dat[rows, :], 1)
+        dat = std(fe.dat[rows, :], dims=1)
+        bsl = std(fe.baseline[rows, :])
+    end
+    return ForceEpochs(dat/sqrt(n), fe.sr, DataFrame(), [bsl], fe.zero_sample)
+end
+
+
 function Base.diff(fe::ForceEpochs{T}; dims::Integer) where {T}
     mtx = fe.dat
     if dims == 1

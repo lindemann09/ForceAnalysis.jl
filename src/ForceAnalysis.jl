@@ -40,6 +40,7 @@ export ForceData, # force data
     mean,
     std,
     var,
+    sderr,
     median,
     diff,
     # plotting

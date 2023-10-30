@@ -67,7 +67,7 @@ end
 
 function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::ForceEpochs;
 	condition::Symbol = :all,
-	stdev::Bool = true,
+	sd_err::Bool = true,
 	colors::Union{<:ColorGradient, Vector{<:Colorant}, Nothing} = nothing,
 	agg_fnc::Function = mean,
 	linewidth::Real = 5,
@@ -91,12 +91,16 @@ function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::ForceEpochs;
 	if 	condition == :all
 		agg_forces = aggregate(fe; agg_fnc = agg_fnc)
 		cond = [:all]
-		sd_forces = nothing
+		if sd_err
+			sd_forces = aggregate(fe; agg_fnc = sderr)
+		else
+			sd_forces = nothing
+		end
  	else
 		agg_forces = aggregate(fe; condition, agg_fnc = agg_fnc)
 		cond = agg_forces.design[:, condition]
-		if stdev
-			sd_forces = aggregate(fe; condition, agg_fnc = std)
+		if sd_err
+			sd_forces = aggregate(fe; condition, agg_fnc = sderr)
 		else
 			sd_forces = nothing
 		end
