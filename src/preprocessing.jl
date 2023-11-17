@@ -78,7 +78,8 @@ function epochs(
 			if from < samples_fd
 				to = i + n_samples - 1
 				if to > samples_fd
-					@warn "extract_force_epochs: last force epoch is incomplete"
+					@warn string("extract_force_epochs: last force epoch is incomplete, ",
+								to-samples_fd, " samples missing.")
 					force_mtx[r, :] .= vcat(dat[from:samples_fd], zeros(T, to - samples_fd))
 				else
 					force_mtx[r, :] .= dat[from:to]
