@@ -23,9 +23,11 @@ export ForceData, # force data
     adjust_baseline!,
     # processing
     peak_differences,
+    epoch_rejection_ids,
     epoch_rejection,
     aggregate,
     subset,
+    concatenate,
     # response detection
     OnsetCriterion,
     ForceResponse,

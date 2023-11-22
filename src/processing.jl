@@ -18,22 +18,37 @@ function peak_differences(force_mtx::Matrix{T}, window_size::Integer) where T <:
 end;
 
 """
-	epoch_rejection(fe::ForceEpochs; force_range::UnitRange, max_difference::Integer,
+	epoch_rejection_ids(fe::ForceEpochs; force_range::UnitRange, max_difference::Integer,
 		max_diff_windows_size::Integer)
 
-TODO
+Return BitVector indicating 'good' epochs
 """
-function epoch_rejection(fe::ForceEpochs;
+function epoch_rejection_ids(fe::ForceEpochs;
 	force_range::UnitRange, # criteria for good trial
 	max_difference::Integer, # criteria for good trial
-	max_diff_windows_size::Integer
+	max_diff_windows_size::Integer,
 )
 	min = minimum(fe)
 	max = maximum(fe)
 	peak_diff = peak_differences(fe.dat, max_diff_windows_size)
 	good = min .>= force_range.start .&&
-		  max .<= force_range.stop .&&
-		  abs.(peak_diff) .<= max_difference
+		   max .<= force_range.stop .&&
+		   abs.(peak_diff) .<= max_difference
+	return good
+end
+
+"""
+	epoch_rejection(fe::ForceEpochs; force_range::UnitRange, max_difference::Integer,
+		max_diff_windows_size::Integer)
+
+Return ForceEpochs fitting the criteria for 'good' epochs
+"""
+function epoch_rejection(fe::ForceEpochs;
+	force_range::UnitRange, # criteria for good trial
+	max_difference::Integer, # criteria for good trial
+	max_diff_windows_size::Integer,
+)
+	good = epoch_rejection_ids(fe; force_range, max_difference, max_diff_windows_size)
 	return subset(fe, good)
 end
 
@@ -114,3 +129,28 @@ function DataFrames.subset(fe::ForceEpochs, args...)
 	return subset(fe, df[:, :row_xxx])
 end
 
+"""
+	concatenate(a::ForceEpochs, b::ForceEpochs)
+
+concatenate two or multiple ForceEpochs
+"""
+function concatenate(a::ForceEpochs, b::ForceEpochs)
+	a.sr == b.sr || throw(ArgumentError("Datasets have different sample sizes"))
+	a.zero_sample == b.zero_sample || throw(ArgumentError("Datasets have different zero samples"))
+	force = vcat(a.dat, b.dat)
+	design = vcat(a.design, b.design)
+	baseline = vcat(a.baseline, b.baseline)
+	return ForceEpochs(force, a.sr, design, baseline, a.zero_sample)
+end
+
+function concatenate(fes::Base.AbstractVecOrTuple{ForceEpochs})
+	if length(fes) < 1
+		return Nothing
+	else
+		rtn = popat!(fes, 1)
+		while length(fes) > 0
+			rtn = concatenate(rtn, popat!(fes, 1))
+		end
+		return rtn
+	end
+end
