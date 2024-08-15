@@ -65,6 +65,7 @@ function epochs(
 	zero_times::AbstractVector{<:Integer},
 	n_samples::Integer,
 	n_samples_before::Integer,
+	design::Union{Nothing, DataFrame}=nothing
 ) where T <: AbstractFloat
 	@unpack dat, ts = fd
 	samples_fd = fd.n_samples # samples for data
@@ -87,8 +88,12 @@ function epochs(
 			end
 		end
 	end
-	return ForceEpochs(force_mtx, fd.sampling_rate,
-		DataFrame(), zeros(T, n_epochs), n_samples_before + 1)
+
+	if isnothing(design)
+		design = DataFrame()
+	end
+	return ForceEpochs(force_mtx, fd.sampling_rate, design,
+		zeros(T, n_epochs), n_samples_before + 1)
 end;
 
 """
