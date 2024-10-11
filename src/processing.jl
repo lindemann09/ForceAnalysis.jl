@@ -58,7 +58,7 @@ end
 		subject_id::Union{Nothing, ColumnIndex} = nothing, agg_fnc::Function = mean)
 TODO
 """
-function DataFrames.aggregate(
+function aggregate(
 	# TODO generate methods with multiple IVs
 	fe::ForceEpochs{T};
 	condition::ColumnIndex = :all,

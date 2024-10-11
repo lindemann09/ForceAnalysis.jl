@@ -14,6 +14,31 @@ function lowpass_filter(dat::AbstractVector{<:AbstractFloat};
 	return filtfilt(myfilter, dat .- dat[1]) .+ dat[1]  # filter centered data
 end;
 
+
+function moving_average(dat::AbstractVector{<:AbstractFloat},
+                        window_size::Int64)
+    rtn = similar(dat)
+    n = length(dat)
+    lower = ceil(Int64, window_size / 2)
+    upper = window_size - lower - 1
+    for x in 1:n
+        f = x - lower
+        if f < 1
+            f = 1
+        end
+        t = x + upper
+        if t > n
+            t = n
+        end
+        @inbounds rtn[x] = mean(dat[f:t])
+    end
+    return rtn
+end
+
+function detrend(dat::AbstractVector{<:AbstractFloat}, window_size::Int64)
+    dat .- moving_average(dat, window_size)
+end
+
 """
 	lowpass_filter!(fd::ForceData; cutoff_freq::Real,butterworth_order::Integer = 4)
 	lowpass_filter!(fd::MultiForceData; cutoff_freq::Real,butterworth_order::Integer = 4)
@@ -35,7 +60,7 @@ function lowpass_filter!(fe::ForceEpochs;
 	butterworth_order::Integer = 4,
 )
 	for row in eachrow(fe.dat)
-		@inbounds row[:] = lowpass_filter(vec(row);
+		row[:] = lowpass_filter(vec(row);
 			sampling_rate = fe.sr, cutoff_freq, butterworth_order)
 	end
 	return fe
@@ -46,8 +71,61 @@ function lowpass_filter!(fd::MultiForceData;
 	butterworth_order::Integer = 4,
 )
 	for col in eachcol(fd.dat)
-		@inbounds col[:] = lowpass_filter(vec(col);
+		col[:] = lowpass_filter(vec(col);
 			sampling_rate = fd.sr, cutoff_freq, butterworth_order)
+	end
+	return fd
+end;
+
+"""
+	moving_average!(fd::ForceData; window_size::Int)
+	moving_average!(fe::ForceEpochs; window_size::Int)
+	moving_average!(fd::MultiForceData; window_size::Int)
+
+TODO
+"""
+function moving_average!(fd::ForceData, window_size::Int)
+	fd.dat[:] = moving_average(fd.dat, window_size)
+	return fd
+end;
+
+function moving_average!(fe::ForceEpochs, window_size::Int)
+	for row in eachrow(fe.dat)
+		row[:] = moving_average(vec(row), window_size)
+	end
+	return fe
+end;
+
+function moving_average!(fd::MultiForceData, window_size::Int)
+	for col in eachcol(fd.dat)
+		col[:] = moving_average(vec(col), window_size)
+	end
+	return fd
+end;
+
+
+"""
+	detrend!(fd::ForceData; window_size::Int)
+	detrend!(fe::ForceEpochs; window_size::Int)
+	detrend!(fd::MultiForceData; window_size::Int)
+
+TODO
+"""
+function detrend!(fd::ForceData, window_size::Int)
+	fd.dat[:] = detrend(fd.dat, window_size)
+	return fd
+end;
+
+function detrend!(fe::ForceEpochs, window_size::Int)
+	for row in eachrow(fe.dat)
+		row[:] = detrend(vec(row), window_size)
+	end
+	return fe
+end;
+
+function detrend!(fd::MultiForceData, window_size::Int)
+	for col in eachcol(fd.dat)
+		col[:] = detrend(vec(col), window_size)
 	end
 	return fd
 end;

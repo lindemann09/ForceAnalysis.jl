@@ -17,8 +17,10 @@ export ForceData, # force data
     save,
     load,
     # preprocessing
+    moving_average!,
     scale_force!,
     lowpass_filter!,
+    detrend!,
     epochs,
     adjust_baseline!,
     # processing
