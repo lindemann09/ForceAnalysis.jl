@@ -68,7 +68,7 @@ struct MultiForceData{N, T <: AbstractFloat}
 		else
 			ls == size(dat, 2) || throw(
 				ArgumentError(
-					"if ids are defined, they must one label for each sensor."),
+					"if ids are defined, there must be one label for each sensor."),
 			)
 			ids = Symbol.(ids)
 		end
