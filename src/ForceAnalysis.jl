@@ -18,11 +18,7 @@ export ForceData, # force data
     load,
     # preprocessing
     moving_average!,
-    scale_force!,
-    lowpass_filter!,
-    detrend!,
     epochs,
-    adjust_baseline!,
     # processing
     peak_differences,
     epoch_rejection_ids,
