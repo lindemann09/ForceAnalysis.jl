@@ -7,12 +7,12 @@ TODO
 struct ForceData{T <: AbstractFloat}
 	dat::Vector{T} # force data
 	ts::Vector{Int} # timestamps
-	sr::Float64
+	sampling_rate::Float64
 	meta::Dict
 
-	function ForceData(dat::Vector{T}, ts::Vector{Int}, sr::Real, meta::Dict) where {T}
+	function ForceData(dat::Vector{T}, ts::Vector{Int}, sampling_rate::Real, meta::Dict) where {T}
 		check_timestamps(ts, length(dat))
-		return new{T}(dat, ts, sr, meta)
+		return new{T}(dat, ts, sampling_rate, meta)
 	end
 end;
 
@@ -20,8 +20,6 @@ Base.propertynames(::ForceData) = (:dat, :timestamps, :sampling_rate, :meta, :n_
 function Base.getproperty(fd::ForceData, s::Symbol)
 	if s === :timestamps
 		return fd.ts
-	elseif s === :sampling_rate
-		return fd.sr
 	elseif s === :n_samples
 		return length(fd.dat)
 	else
@@ -105,7 +103,7 @@ function Base.getproperty(x::MultiForceData, s::Symbol)
 	if s === :timestamps
 		return x.ts
 	elseif s === :sampling_rate
-		return x.sr
+		return x.sampling_rate
 	elseif s === :n_samples
 		return size(x.dat, 1)
 	else
@@ -127,7 +125,7 @@ end
 
 
 function ForceData(fd::MultiForceData, id::Union{Integer, Symbol, String})
-	return ForceData(force(fd, id), fd.ts, fd.sr, fd.meta)
+	return ForceData(force(fd, id), fd.ts, fd.sampling_rate, fd.meta)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", x::MultiForceData)
@@ -145,12 +143,12 @@ TODO
 """
 struct ForceEpochs{T <: AbstractFloat}
 	dat::Matrix{T}
-	sr::Float64
+	sampling_rate::Float64
 	design::DataFrame
 	baseline::Vector{T}
 	zero_sample::Int
 
-	function ForceEpochs(force::Matrix{T}, sr::Real, design::DataFrame,
+	function ForceEpochs(force::Matrix{T}, sampling_rate::Real, design::DataFrame,
 		baseline::Vector{T}, zero_sample::Int) where {T <: AbstractFloat}
 		lf = size(force, 1)
 		lb = length(baseline)
@@ -159,7 +157,13 @@ struct ForceEpochs{T <: AbstractFloat}
 				"Number of rows of force ($(lf)) must match the length of baseline ($(lb)).",
 			),
 		)
-		return new{T}(force, sr, design, baseline, zero_sample::Int)
+		n = nrow(design)
+		n == 0 || lf == n || throw(
+			ArgumentError(
+				"Number of rows of force ($(lf)) must match the number of rows ins the design ($(n)).",
+			),
+		)
+		return new{T}(force, sampling_rate, design, baseline, zero_sample::Int)
 	end
 end;
 
@@ -169,8 +173,6 @@ Base.propertynames(::ForceEpochs) = (:dat, :sampling_rate, :design, :baseline,
 function Base.getproperty(x::ForceEpochs, s::Symbol)
 	if s === :n_epochs
 		return size(x.dat, 1)
-	elseif s === :sampling_rate
-		return x.sr
 	elseif s === :n_samples
 		return size(x.dat, 2)
 	else
@@ -184,7 +186,7 @@ end
 TODO
 """
 function Base.copy(fe::ForceEpochs)
-	return ForceEpochs(copy(fe.dat), fe.sr, copy(fe.design),
+	return ForceEpochs(copy(fe.dat), fe.sampling_rate, copy(fe.design),
 		copy(fe.baseline), fe.zero_sample)
 end
 

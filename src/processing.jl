@@ -105,7 +105,7 @@ function aggregate(
 
 	delete!(dsgn, :all)
 	return ForceEpochs(
-		agg_forces, fe.sr, DataFrame(dsgn), agg_baseline, fe.zero_sample)
+		agg_forces, fe.sampling_rate, DataFrame(dsgn), agg_baseline, fe.zero_sample)
 end;
 
 
@@ -119,7 +119,7 @@ function DataFrames.subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Intege
 	force = fe.dat[rows, :]
 	bsln = fe.baseline[rows]
 	subset_design = fe.design[rows, :]
-	return ForceEpochs(force, fe.sr, subset_design, bsln, fe.zero_sample)
+	return ForceEpochs(force, fe.sampling_rate, subset_design, bsln, fe.zero_sample)
 end
 
 function DataFrames.subset(fe::ForceEpochs, args...)
@@ -135,12 +135,12 @@ end
 concatenate two or multiple ForceEpochs
 """
 function concatenate(a::ForceEpochs, b::ForceEpochs)
-	a.sr == b.sr || throw(ArgumentError("Datasets have different sample sizes"))
+	a.sampling_rate == b.sampling_rate || throw(ArgumentError("Datasets have different sampling rates"))
 	a.zero_sample == b.zero_sample || throw(ArgumentError("Datasets have different zero samples"))
 	force = vcat(a.dat, b.dat)
 	design = vcat(a.design, b.design)
 	baseline = vcat(a.baseline, b.baseline)
-	return ForceEpochs(force, a.sr, design, baseline, a.zero_sample)
+	return ForceEpochs(force, a.sampling_rate, design, baseline, a.zero_sample)
 end
 
 function concatenate(fes::Base.AbstractVecOrTuple{ForceEpochs})

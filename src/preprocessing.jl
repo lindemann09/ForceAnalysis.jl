@@ -51,7 +51,7 @@ function lowpass_filter!(fd::ForceData;
 	butterworth_order::Integer = 4,
 )
 	fd.dat[:] = lowpass_filter(fd.dat;
-		sampling_rate = fd.sr, cutoff_freq, butterworth_order)
+		sampling_rate = fd.sampling_rate, cutoff_freq, butterworth_order)
 	return fd
 end;
 
@@ -61,7 +61,7 @@ function lowpass_filter!(fe::ForceEpochs;
 )
 	for row in eachrow(fe.dat)
 		row[:] = lowpass_filter(vec(row);
-			sampling_rate = fe.sr, cutoff_freq, butterworth_order)
+			sampling_rate = fe.sampling_rate, cutoff_freq, butterworth_order)
 	end
 	return fe
 end;
@@ -72,7 +72,7 @@ function lowpass_filter!(fd::MultiForceData;
 )
 	for col in eachcol(fd.dat)
 		col[:] = lowpass_filter(vec(col);
-			sampling_rate = fd.sr, cutoff_freq, butterworth_order)
+			sampling_rate = fd.sampling_rate, cutoff_freq, butterworth_order)
 	end
 	return fd
 end;

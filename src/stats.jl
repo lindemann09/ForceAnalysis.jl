@@ -15,7 +15,7 @@ function Statistics.mean(fe::ForceEpochs;
         bsl = mean(fe.baseline[rows, :])
     end
 
-    return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
+    return ForceEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 """
@@ -39,7 +39,7 @@ function Statistics.median(fe::ForceEpochs;
             bsl = NaN
         end
     end
-    return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
+    return ForceEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 """
@@ -57,7 +57,7 @@ function Statistics.var(fe::ForceEpochs;
         dat = var(fe.dat[rows, :], dims=1)
         bsl = var(fe.baseline[rows, :])
     end
-    return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
+    return ForceEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 """
@@ -75,7 +75,7 @@ function Statistics.std(fe::ForceEpochs;
         dat = std(fe.dat[rows, :], dims=1)
         bsl = std(fe.baseline[rows, :])
     end
-    return ForceEpochs(dat, fe.sr, DataFrame(), [bsl], fe.zero_sample)
+    return ForceEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 
@@ -96,7 +96,7 @@ function sderr(fe::ForceEpochs;
         dat = std(fe.dat[rows, :], dims=1)
         bsl = std(fe.baseline[rows, :])
     end
-    return ForceEpochs(dat/sqrt(n), fe.sr, DataFrame(), [bsl], fe.zero_sample)
+    return ForceEpochs(dat/sqrt(n), fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 
@@ -111,7 +111,7 @@ function Base.diff(fe::ForceEpochs{T}; dims::Integer) where {T}
     else
         throw(ArgumentError("dims has to be 1 or 2 and not $dims"))
     end
-    return ForceEpochs(dat, fe.sr, fe.design, fe.baseline, fe.zero_sample)
+    return ForceEpochs(dat, fe.sampling_rate, fe.design, fe.baseline, fe.zero_sample)
 end;
 
 
