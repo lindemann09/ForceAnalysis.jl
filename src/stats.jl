@@ -100,7 +100,7 @@ function sderr(fe::BeForEpochs;
 end
 
 
-function Base.diff(fe::BeForEpochs{T}; dims::Integer) where {T}
+function Base.diff(fe::BeForEpochs; dims::Integer)
     mtx = fe.dat
     if dims == 1
         z = zeros(T, 1, size(mtx, 2))

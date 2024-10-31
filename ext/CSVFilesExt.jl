@@ -4,7 +4,6 @@ using CSV, JSON
 using ZipArchives
 using DataFrames
 
-using BeForData
 using ForceAnalysis
 
 function ForceAnalysis.save_csv(filename::String, fe::BeForEpochs; compress = true)

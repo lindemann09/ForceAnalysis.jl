@@ -1,6 +1,6 @@
 module ForceAnalysis
 
-using Rexport
+using Reexport
 using UnPack
 using DSP # signal processing, filtering
 using DataFrames
@@ -12,7 +12,6 @@ using Statistics
 @reexport using BeForData: BeForRecord, BeForEpochs
 
 export ForceData, # force data
-    BeForEpochs,
     force,
     # io
     save,
@@ -50,7 +49,6 @@ export ForceData, # force data
 include("data_structs.jl")
 include("io.jl")
 include("stats.jl")
-include("preprocessing.jl")
 include("processing.jl")
 include("response_detection.jl")
 

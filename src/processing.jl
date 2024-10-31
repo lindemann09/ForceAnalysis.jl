@@ -1,3 +1,9 @@
+const ColumnIndex = Union{Symbol, AbstractString}
+# const MultiColumnIndex = Union{
+#     ColumnIndex, AbstractVector{<:ColumnIndex},Tuple{<:ColumnIndex}
+# }
+
+
 peak_differences(fe::BeForEpochs, window_size::Integer) = peak_differences(fe.dat, window_size)
 
 function peak_differences(force_mtx::Matrix{T}, window_size::Integer) where T <: AbstractFloat
@@ -60,11 +66,11 @@ TODO
 """
 function aggregate(
 	# TODO generate methods with multiple IVs
-	fe::BeForEpochs{T};
+	fe::BeForEpochs;
 	condition::ColumnIndex = :all,
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
 	agg_fnc::Function = mean,
-) where T <: AbstractFloat
+)
 
 	# aggregate per subject
 	agg_forces = Matrix{T}(undef, 0, size(fe.dat, 2))
