@@ -1,28 +1,14 @@
 module ForceAnalysis
 
+using Reexport
 using UnPack
-using DSP # signal processing, filtering
 using DataFrames
-using JLD2, CodecZlib
-using FileIO
 using CategoricalArrays: unique
-
 using Statistics
 
-export ForceData, # force data
-    MultiForceData,
-    ForceEpochs,
-    force,
-    # io
-    save,
-    load,
-    # preprocessing
-    moving_average!,
-    scale_force!,
-    lowpass_filter!,
-    detrend!,
-    epochs,
-    adjust_baseline!,
+@reexport using BeForData: BeForRecord, BeForEpochs
+
+export
     # processing
     peak_differences,
     epoch_rejection_ids,
@@ -53,26 +39,23 @@ export ForceData, # force data
 	plot_good_bad!,
 	highlight_ranges!
 
-include("data_structs.jl")
-include("io.jl")
+
 include("stats.jl")
-include("preprocessing.jl")
 include("processing.jl")
 include("response_detection.jl")
+
+
+include("old_force_data.jl")
+export ForceData # depricated
 
 ## extensions
 _makie_error() = throw(ArgumentError("Have you loaded an appropriate Makie backend?"))
 highlight_ranges!(::Any, ::Any, ::Any; kwargs...) = _makie_error()
-plot_good_bad!(::Any, ::ForceEpochs; kwargs...) = _makie_error()
-plot_av_epoch!(::Any, ::ForceEpochs; kwargs...) = _makie_error()
+plot_good_bad!(::Any, ::BeForEpochs; kwargs...) = _makie_error()
+plot_av_epoch!(::Any, ::BeForEpochs; kwargs...) = _makie_error()
 
 if !isdefined(Base, :get_extension)
     include("../ext/ForceMakieExt.jl")
 end
-
-if !isdefined(Base, :get_extension)
-    include("../ext/CSVFilesExt.jl")
-end
-
 
 end

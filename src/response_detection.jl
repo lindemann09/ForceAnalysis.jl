@@ -113,7 +113,7 @@ end
 
 """
 	response_detection(force_vector::AbstractVector{<:AbstractFloat}, criterion::OnsetCriterion; zero_sample::Integer)::ForceResponse
-	response_detection(fe::ForceEpochs, criterion::OnsetCriterion)::Vector{ForceResponse}
+	response_detection(fe::BeForEpochs, criterion::OnsetCriterion)::Vector{ForceResponse}
 
 Returns a `ForceResponse` or `Vector{ForceResponse}`
 TODO
@@ -138,7 +138,7 @@ end
 
 
 function response_detection(
-	fe::ForceEpochs,
+	fe::BeForEpochs,
 	criterion::OnsetCriterion,
 )::Vector{ForceResponse}
 	# returns ForceResponse relative to zero sample
@@ -149,7 +149,7 @@ end
 
 """
 	duration(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
-	duration(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
+	duration(fp::BeForEpochs, rb::AbstractVector{ForceResponse})
 
 TODO
 """
@@ -174,7 +174,7 @@ end
 
 """
 	latency(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
-	latency(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
+	latency(fp::BeForEpochs, rb::AbstractVector{ForceResponse})
 
 TODO
 """
@@ -199,7 +199,7 @@ end
 
 """
 	peak_force(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
-	peak_force(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
+	peak_force(fp::BeForEpochs, rb::AbstractVector{ForceResponse})
 
 TODO
 """
@@ -219,7 +219,7 @@ function peak_force(
 end
 
 function peak_force(
-	fe::ForceEpochs,
+	fe::BeForEpochs,
 	rb::AbstractVector{ForceResponse},
 )
 	# takes into account zero samples
@@ -231,7 +231,7 @@ end
 
 """
 	impulse_size(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
-	impulse_size(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
+	impulse_size(fp::BeForEpochs, rb::AbstractVector{ForceResponse})
 
 TODO
 """
@@ -245,7 +245,7 @@ function impulse_size(force_vector::AbstractVector{<:AbstractFloat},
 end
 
 function impulse_size(
-	fp::ForceEpochs,
+	fp::BeForEpochs,
 	rb::AbstractVector{ForceResponse},
 )
 	fp.n_epochs == length(rb) || throw(ArgumentError(

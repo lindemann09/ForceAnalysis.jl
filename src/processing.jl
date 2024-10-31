@@ -1,4 +1,10 @@
-peak_differences(fe::ForceEpochs, window_size::Integer) = peak_differences(fe.dat, window_size)
+const ColumnIndex = Union{Symbol, AbstractString}
+# const MultiColumnIndex = Union{
+#     ColumnIndex, AbstractVector{<:ColumnIndex},Tuple{<:ColumnIndex}
+# }
+
+
+peak_differences(fe::BeForEpochs, window_size::Integer) = peak_differences(fe.dat, window_size)
 
 function peak_differences(force_mtx::Matrix{T}, window_size::Integer) where T <: AbstractFloat
 	# peak difference per row
@@ -18,12 +24,12 @@ function peak_differences(force_mtx::Matrix{T}, window_size::Integer) where T <:
 end;
 
 """
-	epoch_rejection_ids(fe::ForceEpochs; force_range::UnitRange, max_difference::Integer,
+	epoch_rejection_ids(fe::BeForEpochs; force_range::UnitRange, max_difference::Integer,
 		max_diff_windows_size::Integer)
 
 Return BitVector indicating 'good' epochs
 """
-function epoch_rejection_ids(fe::ForceEpochs;
+function epoch_rejection_ids(fe::BeForEpochs;
 	force_range::UnitRange, # criteria for good trial
 	max_difference::Integer, # criteria for good trial
 	max_diff_windows_size::Integer,
@@ -38,12 +44,12 @@ function epoch_rejection_ids(fe::ForceEpochs;
 end
 
 """
-	epoch_rejection(fe::ForceEpochs; force_range::UnitRange, max_difference::Integer,
+	epoch_rejection(fe::BeForEpochs; force_range::UnitRange, max_difference::Integer,
 		max_diff_windows_size::Integer)
 
-Return ForceEpochs fitting the criteria for 'good' epochs
+Return BeForEpochs fitting the criteria for 'good' epochs
 """
-function epoch_rejection(fe::ForceEpochs;
+function epoch_rejection(fe::BeForEpochs;
 	force_range::UnitRange, # criteria for good trial
 	max_difference::Integer, # criteria for good trial
 	max_diff_windows_size::Integer,
@@ -54,17 +60,17 @@ end
 
 
 """
-	aggregate(fe::ForceEpochs; condition::ColumnIndex = :all,
+	aggregate(fe::BeForEpochs; condition::ColumnIndex = :all,
 		subject_id::Union{Nothing, ColumnIndex} = nothing, agg_fnc::Function = mean)
 TODO
 """
 function aggregate(
 	# TODO generate methods with multiple IVs
-	fe::ForceEpochs{T};
+	fe::BeForEpochs;
 	condition::ColumnIndex = :all,
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
 	agg_fnc::Function = mean,
-) where T <: AbstractFloat
+)
 
 	# aggregate per subject
 	agg_forces = Matrix{T}(undef, 0, size(fe.dat, 2))
@@ -104,25 +110,25 @@ function aggregate(
 	end
 
 	delete!(dsgn, :all)
-	return ForceEpochs(
-		agg_forces, fe.sr, DataFrame(dsgn), agg_baseline, fe.zero_sample)
+	return BeForEpochs(
+		agg_forces, fe.sampling_rate, DataFrame(dsgn), agg_baseline, fe.zero_sample)
 end;
 
 
 """
-	subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Integer})
-	subset(fe::ForceEpochs, args...)
+	subset(fe::BeForEpochs, rows::Base.AbstractVecOrTuple{Integer})
+	subset(fe::BeForEpochs, args...)
 
 TODO
 """
-function DataFrames.subset(fe::ForceEpochs, rows::Base.AbstractVecOrTuple{Integer})
+function DataFrames.subset(fe::BeForEpochs, rows::Base.AbstractVecOrTuple{Integer})
 	force = fe.dat[rows, :]
 	bsln = fe.baseline[rows]
 	subset_design = fe.design[rows, :]
-	return ForceEpochs(force, fe.sr, subset_design, bsln, fe.zero_sample)
+	return BeForEpochs(force, fe.sampling_rate, subset_design, bsln, fe.zero_sample)
 end
 
-function DataFrames.subset(fe::ForceEpochs, args...)
+function DataFrames.subset(fe::BeForEpochs, args...)
 	df = copy(fe.design)
 	df.row_xxx .= 1:nrow(df)
 	df = subset(df, args...)
@@ -130,20 +136,20 @@ function DataFrames.subset(fe::ForceEpochs, args...)
 end
 
 """
-	concatenate(a::ForceEpochs, b::ForceEpochs)
+	concatenate(a::BeForEpochs, b::BeForEpochs)
 
-concatenate two or multiple ForceEpochs
+concatenate two or multiple BeForEpochs
 """
-function concatenate(a::ForceEpochs, b::ForceEpochs)
-	a.sr == b.sr || throw(ArgumentError("Datasets have different sample sizes"))
+function concatenate(a::BeForEpochs, b::BeForEpochs)
+	a.sampling_rate == b.sampling_rate || throw(ArgumentError("Datasets have different sampling rates"))
 	a.zero_sample == b.zero_sample || throw(ArgumentError("Datasets have different zero samples"))
 	force = vcat(a.dat, b.dat)
 	design = vcat(a.design, b.design)
 	baseline = vcat(a.baseline, b.baseline)
-	return ForceEpochs(force, a.sr, design, baseline, a.zero_sample)
+	return BeForEpochs(force, a.sampling_rate, design, baseline, a.zero_sample)
 end
 
-function concatenate(fes::Base.AbstractVecOrTuple{ForceEpochs})
+function concatenate(fes::Base.AbstractVecOrTuple{BeForEpochs})
 	if length(fes) < 1
 		return Nothing
 	else
