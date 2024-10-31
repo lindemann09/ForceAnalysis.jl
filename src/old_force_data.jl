@@ -11,7 +11,7 @@ struct ForceData{T <: AbstractFloat}
 	meta::Dict
 
 	function ForceData(dat::Vector{T}, ts::Vector{Int}, sampling_rate::Real, meta::Dict) where {T}
-		check_timestamps(ts, length(dat))
+		_check_timestamps(ts, length(dat))
 		return new{T}(dat, ts, sampling_rate, meta)
 	end
 end;
@@ -31,25 +31,8 @@ function Base.getproperty(fd::ForceData, s::Symbol)
 	end
 end
 
-"""
-	force(fd::ForceData)
-	force(fe::BeForEpochs)
-
-Returns the force data as `Matrix` or `Vector`.
-"""
-force(fd::ForceData) = fd.dat
-
-function Base.show(io::IO, mime::MIME"text/plain", x::ForceData)
-	println(io, "ForceData")
-	print(io, " $(x.n_samples) samples, sampling rate: $(x.sampling_rate)")
-end;
-
-
-force(fe::BeForEpochs) = fe.dat
-
-
 # helper
-function check_timestamps(timestamps::Vector, required_length::Int)
+function _check_timestamps(timestamps::Vector, required_length::Int)
 	lt = length(timestamps)
 	return lt == 0 || lt == required_length ||
 		   throw(

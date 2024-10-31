@@ -25,7 +25,7 @@ function Makie.plot!(ax::Axis, fe::BeForEpochs;
 		end
 	end
 
-	return _plot_force_matrix!(ax, force(fe); zero_sample = fe.zero_sample,
+	return _plot_force_matrix!(ax, fe.dat; zero_sample = fe.zero_sample,
 		ylims, colors, linewidth, marker, marker_color, marker_linewidth,
 		info_text, kwargs...)
 end
