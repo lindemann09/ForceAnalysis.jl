@@ -1,11 +1,11 @@
 
 """
-    mean(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+    mean(fe::BeForEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
 
 Computes the mean of the epochs, i.e., column-wise means for each sample.
 If `rows` is defined, only the selected rows are considered.
 """
-function Statistics.mean(fe::ForceEpochs;
+function Statistics.mean(fe::BeForEpochs;
         rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         dat = mean(fe.dat, dims=1)
@@ -15,16 +15,16 @@ function Statistics.mean(fe::ForceEpochs;
         bsl = mean(fe.baseline[rows, :])
     end
 
-    return ForceEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 """
-    median(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+    median(fe::BeForEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
 
 Computes the median of the epochs, i.e., column-wise medians for each sample.
 If `rows` is defined, only the selected rows are considered.
 """
-function Statistics.median(fe::ForceEpochs;
+function Statistics.median(fe::BeForEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         dat = median(fe.dat, dims=1)
@@ -39,16 +39,16 @@ function Statistics.median(fe::ForceEpochs;
             bsl = NaN
         end
     end
-    return ForceEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 """
-    var(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+    var(fe::BeForEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
 
 Computes the variance of the epochs, i.e., column-wise variances for each sample.
 If `rows` is defined, only the selected rows are considered.
 """
-function Statistics.var(fe::ForceEpochs;
+function Statistics.var(fe::BeForEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         dat = var(fe.dat, dims=1)
@@ -57,16 +57,16 @@ function Statistics.var(fe::ForceEpochs;
         dat = var(fe.dat[rows, :], dims=1)
         bsl = var(fe.baseline[rows, :])
     end
-    return ForceEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 """
-    std(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+    std(fe::BeForEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
 
 Computes the standard deviation of the epochs, i.e., column-wise standard
 deviations for each sample. If `rows` is defined, only the selected rows are considered.
 """
-function Statistics.std(fe::ForceEpochs;
+function Statistics.std(fe::BeForEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         dat = std(fe.dat, dims=1)
@@ -75,17 +75,17 @@ function Statistics.std(fe::ForceEpochs;
         dat = std(fe.dat[rows, :], dims=1)
         bsl = std(fe.baseline[rows, :])
     end
-    return ForceEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 
 """
-    sderr(fe::ForceEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
+    sderr(fe::BeForEpochs; rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
 
 Computes the standard error of the epochs, i.e., column-wise standard
 deviations for each sample. If `rows` is defined, only the selected rows are considered.
 """
-function sderr(fe::ForceEpochs;
+function sderr(fe::BeForEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     if isnothing(rows)
         n = size(fe.dat, 1)
@@ -96,11 +96,11 @@ function sderr(fe::ForceEpochs;
         dat = std(fe.dat[rows, :], dims=1)
         bsl = std(fe.baseline[rows, :])
     end
-    return ForceEpochs(dat/sqrt(n), fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat/sqrt(n), fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
 end
 
 
-function Base.diff(fe::ForceEpochs{T}; dims::Integer) where {T}
+function Base.diff(fe::BeForEpochs{T}; dims::Integer) where {T}
     mtx = fe.dat
     if dims == 1
         z = zeros(T, 1, size(mtx, 2))
@@ -111,20 +111,20 @@ function Base.diff(fe::ForceEpochs{T}; dims::Integer) where {T}
     else
         throw(ArgumentError("dims has to be 1 or 2 and not $dims"))
     end
-    return ForceEpochs(dat, fe.sampling_rate, fe.design, fe.baseline, fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate, fe.design, fe.baseline, fe.zero_sample)
 end;
 
 
 """
-    minimum(fe:ForceEpochs)
+    minimum(fe:BeForEpochs)
 
 Minimum of each epoch.
 """
-Base.minimum(fe::ForceEpochs) = return vec(minimum(fe.dat, dims=2))
+Base.minimum(fe::BeForEpochs) = return vec(minimum(fe.dat, dims=2))
 
 """
-    maximum(fe:ForceEpochs)
+    maximum(fe:BeForEpochs)
 
 Minimum of each epoch.
 """
-Base.maximum(fe::ForceEpochs) = return vec(maximum(fe.dat, dims=2))
+Base.maximum(fe::BeForEpochs) = return vec(maximum(fe.dat, dims=2))

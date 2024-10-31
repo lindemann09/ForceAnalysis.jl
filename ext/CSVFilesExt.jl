@@ -4,9 +4,10 @@ using CSV, JSON
 using ZipArchives
 using DataFrames
 
+using BeForData
 using ForceAnalysis
 
-function ForceAnalysis.save_csv(filename::String, fe::ForceEpochs; compress = true)
+function ForceAnalysis.save_csv(filename::String, fe::BeForEpochs; compress = true)
 	dataname = _dataname(filename)
 	ZipWriter(filename) do zipfl
 		zip_newfile(zipfl, dataname * ".forces.csv"; compress)
@@ -38,7 +39,7 @@ function ForceAnalysis.load_csv(filename::String)
 	design = CSV.read(fl, DataFrame)
 	close(zipfl)
 
-	return ForceEpochs(dat, meta["sampling_rate"], design,
+	return BeForEpochs(dat, meta["sampling_rate"], design,
 		vec(baseline), meta["zero_sample"])
 end
 

@@ -2,11 +2,11 @@ fl_formats = Dict(:jld2 => ".jld2", :csv => ".csv.zip")
 
 """
 	save(filename::String, fd::ForceData; compress = true)
-	save(filename::String, [format::Symbol], fe::ForceEpochs; compress = true)
+	save(filename::String, [format::Symbol], fe::BeForEpochs; compress = true)
 
-Saves `ForceData` or `ForceEpochs` as jld2 file.
+Saves `ForceData` or `BeForEpochs` as jld2 file.
 
-For `ForceEpochs` the format can be optionally specified:
+For `BeForEpochs` the format can be optionally specified:
 * `:jld2`: jld2 file
 * `:csv`: creates a Zip-file containing seperate csv-data for `forces`, `design`,
 		 `baseline` and a json file with `sampling_rate` and `zero_times`
@@ -18,11 +18,11 @@ end
 
 """
 	load(::Type{ForceData}, filename::String)
-	load(::Type{ForceEpochs}, [format::Symbol], filename::String)
+	load(::Type{BeForEpochs}, [format::Symbol], filename::String)
 
-Loads `ForceData` or `ForceEpochs` as jdl2 file.
+Loads `ForceData` or `BeForEpochs` as jdl2 file.
 
-If the format of the `ForceEpochs` is not specified, it will be infered from the
+If the format of the `BeForEpochs` is not specified, it will be infered from the
 filename suffix.
 """
 function FileIO.load(::Type{ForceData}, filename::String)
@@ -31,7 +31,7 @@ end;
 
 ## Force epochs
 
-function FileIO.save(filename::String, format::Symbol, fe::ForceEpochs; compress = true)
+function FileIO.save(filename::String, format::Symbol, fe::BeForEpochs; compress = true)
 	filename = _check_suffix(filename, format)
 	if format == :jld2
 		jldsave(filename, compress; fe)
@@ -43,13 +43,13 @@ end
 
 
 # jld2 as default save method
-function FileIO.save(filename::String, fe::ForceEpochs; compress = true)
+function FileIO.save(filename::String, fe::BeForEpochs; compress = true)
 	save(filename, :jld2, fe; compress)
 end
 
-function FileIO.load(::Type{ForceEpochs}, format::Symbol, filename::String)
+function FileIO.load(::Type{BeForEpochs}, format::Symbol, filename::String)
 	if format == :jld2
-		return convert(ForceEpochs, load_object(filename))
+		return convert(BeForEpochs, load_object(filename))
 	elseif format == :csv
 		return load_csv(filename)
 	else
@@ -58,7 +58,7 @@ function FileIO.load(::Type{ForceEpochs}, format::Symbol, filename::String)
 end;
 
 # guess format, if not defined
-function FileIO.load(::Type{ForceEpochs}, filename::String)
+function FileIO.load(::Type{BeForEpochs}, filename::String)
 	format = :unknown
 	for (k, v) in fl_formats
 		if endswith(filename, v)
@@ -68,13 +68,13 @@ function FileIO.load(::Type{ForceEpochs}, filename::String)
 	if format == :unknown
 		throw(DomainError(filename, "Please specify file format. Can't guess it from filename."))
 	end
-	return load(ForceEpochs, format, filename)
+	return load(BeForEpochs, format, filename)
 end
 
 
 _csv_error() = throw(ArgumentError(
 	"To save CSV, please load the following modules: CSV, JSON and ZipArchives."))
-save_csv(::Any, ::ForceEpochs; kwargs...) = _csv_error()
+save_csv(::Any, ::BeForEpochs; kwargs...) = _csv_error()
 load_csv(::Any; kwargs...) = _csv_error()
 
 ## helper

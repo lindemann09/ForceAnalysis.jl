@@ -4,6 +4,7 @@ using Makie
 using Colors
 using PlotUtils: ColorGradient
 
+using BeForData
 using ForceAnalysis
 
 export 	plot!,

@@ -1,9 +1,10 @@
 name = "ForceAnalysis"
 uuid = "253e1fb9-e260-4ab3-92cb-ad0757323424"
 authors = ["Oliver Lindemann"]
-version = "0.5.0-DEV1"
+version = "0.5.0-DEV3"
 
 [deps]
+BeForData = "49581401-e3b0-43cb-bb9c-49750952130d"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
 CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
@@ -15,6 +16,7 @@ JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 PlotUtils = "995b91a9-d308-5afd-9ec6-746e21dbc043"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 ZipArchives = "49080126-0e18-4c2a-b176-c102e4b3760c"
