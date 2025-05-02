@@ -73,6 +73,7 @@ function aggregate(
 )
 
 	# aggregate per subject
+	T = eltype(fe.dat)
 	agg_forces = Matrix{T}(undef, 0, size(fe.dat, 2))
 	agg_baseline = T[]
 
