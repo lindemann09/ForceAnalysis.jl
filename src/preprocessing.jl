@@ -9,7 +9,9 @@ function lowpass_filter(dat::AbstractVector{<:AbstractFloat};
 	cutoff_freq::Real,
 	butterworth_order::Integer,
 )
-	responsetype = Lowpass(cutoff_freq; fs = sampling_rate)
+    wn = 2*cutoff_freq/sampling_rate # normalize cutt of freq
+    wn >= 1 && error("frequencies must be less than the Nyquist frequency $(fs/2)")
+	responsetype = Lowpass(wn)
 	myfilter = digitalfilter(responsetype, Butterworth(butterworth_order))
 	return filtfilt(myfilter, dat .- dat[1]) .+ dat[1]  # filter centered data
 end;
