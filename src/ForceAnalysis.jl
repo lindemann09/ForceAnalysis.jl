@@ -1,12 +1,14 @@
 module ForceAnalysis
 
-using UnPack
+using Reexport
+
 using DSP # signal processing, filtering
 using DataFrames
 using CategoricalArrays: unique
-using BeForData
-
 using Statistics
+
+@reexport using BeForData
+
 
 export
     # processing
