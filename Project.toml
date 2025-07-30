@@ -27,7 +27,7 @@ CSVFilesExt = ["CSV", "JSON", "ZipArchives"]
 ForceMakieExt = ["Colors", "Makie", "PlotUtils"]
 
 [compat]
-BeForData = "0.3.0"
+BeForData = "0.3"
 DSP = "0.8"
 DataFrames = "1.7"
 JLD2 = "0.5"
