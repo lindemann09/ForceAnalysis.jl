@@ -23,15 +23,17 @@ TODO
 struct ForceResponse
 	onset::Union{Missing, Int}
 	offset::Union{Missing, Int}
+	sampling_rate:: Real
 	zero_sample::Int
-	function ForceResponse(a::Union{Missing, Int}, b::Union{Missing, Int}, c::Int)
+	function ForceResponse(a::Union{Missing, Int}, b::Union{Missing, Int}, c::Float64, d::Int)
 		if !ismissing(a) && !ismissing(b) && a > b
 			throw(ArgumentError("Onset must be before offset."))
 		end
-		return new(a, b, c)
+		return new(a, b, c, d)
 	end
 end
-ForceResponse(onset::Union{Missing, Int}, offset::Union{Missing, Int}) = ForceResponse(onset, offset, 0)
+ForceResponse(onset::Union{Missing, Int}, offset::Union{Missing, Int},
+			sampling_rate::Real) = ForceResponse(onset, offset, sampling_rate, 0)
 
 function OnsetCriterion(;
 	min_increase::Real,
@@ -112,16 +114,19 @@ function _response_offset(
 end
 
 """
-	response_detection(force_vector::AbstractVector{<:AbstractFloat}, criterion::OnsetCriterion; zero_sample::Integer)::ForceResponse
-	response_detection(fe::ForceEpochs, criterion::OnsetCriterion)::Vector{ForceResponse}
+	response_detection(force_vector::AbstractVector{<:AbstractFloat}, sampling_rate:: Float64,
+				criterion::OnsetCriterion; zero_sample::Integer)::ForceResponse
+	response_detection(fe::BeForEpochs, sampling_rate:: Float64,
+				criterion::OnsetCriterion)::Vector{ForceResponse}
 
 Returns a `ForceResponse` or `Vector{ForceResponse}`
 TODO
 """
 function response_detection(
 	force_vector::AbstractVector{<:AbstractFloat},
+	sampling_rate::Float64,
 	criterion::OnsetCriterion;
-	zero_sample::Integer,
+	zero_sample::Integer = 0
 )::ForceResponse
 	# returns ForceResponse relative to zero sample
 	onset = _response_onset(force_vector, criterion)
@@ -130,83 +135,60 @@ function response_detection(
 		if offset < 0
 			offset = missing
 		end
-		return ForceResponse(onset, offset, zero_sample)
+		return ForceResponse(onset, offset, sampling_rate, zero_sample)
 	else
-		return ForceResponse(missing, missing, 0)
+		return ForceResponse(missing, missing, sampling_rate, zero_sample)
 	end
 end
 
 
 function response_detection(
-	fe::ForceEpochs,
+	fe::BeForEpochs,
 	criterion::OnsetCriterion,
 )::Vector{ForceResponse}
 	# returns ForceResponse relative to zero sample
-	@unpack zero_sample = fe
-	return [response_detection(f, criterion; zero_sample) for f in eachrow(fe.dat)]
+	zero_sample = fe.zero_sample
+	sr = fe.sampling_rate
+	return [response_detection(f, sr, criterion; zero_sample) for f in eachrow(fe.dat)]
 end
 
 
 """
-	duration(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
-	duration(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
-
+	duration
 TODO
 """
 
-function duration(
-	rb::ForceResponse;
-	sampling_rate::Real,
-)
+function duration(rb::ForceResponse)
 	# returns response latency in millisecond
 	if ismissing(rb.onset) || ismissing(rb.offset)
 		return missing
 	end
-	return _to_millisec(rb.offset - rb.onset, sampling_rate)
+	return _to_millisec(rb.offset - rb.onset, rb.sampling_rate)
 end
 
-function duration(
-	vrb::AbstractVector{ForceResponse};
-	sampling_rate::Real,
-)
-	return [latency(rb; sampling_rate) for rb in vrb]
-end
 
 """
-	latency(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
-	latency(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
-
+	latency
 TODO
 """
-function latency(
-	rb::ForceResponse;
-	sampling_rate::Real,
-)
+function latency(rb::ForceResponse)
 	# returns latency in millisecond
 	if ismissing(rb.onset)
 		return missing
 	end
-	return _to_millisec(rb.onset - rb.zero_sample, sampling_rate)
-end
-
-function latency(
-	vrb::AbstractVector{ForceResponse};
-	sampling_rate::Real,
-)
-	return [latency(rb; sampling_rate) for rb in vrb]
+	return _to_millisec(rb.onset - rb.zero_sample, rb.sampling_rate)
 end
 
 
 """
 	peak_force(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
-	peak_force(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
 
 TODO
 """
 
 function peak_force(
 	force_vector::AbstractVector{<:AbstractFloat},
-	rb::ForceResponse,
+	rb::ForceResponse
 )
 	# returns (peak force, n sample to peak (reltive to onset))
 	resp = _extract_response(force_vector, rb)
@@ -218,25 +200,15 @@ function peak_force(
 	return (; peak = rtn[1], sample_to_peak = rtn[2])
 end
 
-function peak_force(
-	fe::ForceEpochs,
-	rb::AbstractVector{ForceResponse},
-)
-	# takes into account zero samples
-	fe.n_epochs == length(rb) || throw(ArgumentError(
-		"Number of epochs and ForceResponses don't match!"))
-	return [peak_force(f, b) for (f, b) in zip(eachrow(fe.dat), rb)]
-end
-
 
 """
 	impulse_size(force_vector::AbstractVector{<:AbstractFloat}, rb::ForceResponse)
-	impulse_size(fp::ForceEpochs, rb::AbstractVector{ForceResponse})
 
 TODO
 """
-function impulse_size(force_vector::AbstractVector{<:AbstractFloat},
-	rb::ForceResponse,
+function impulse_size(
+	force_vector::AbstractVector{<:AbstractFloat},
+	rb::ForceResponse
 )   # TODO not yet tested
 	resp = _extract_response(force_vector, rb)
 	if !isnothing(resp)
@@ -244,14 +216,6 @@ function impulse_size(force_vector::AbstractVector{<:AbstractFloat},
 	end
 end
 
-function impulse_size(
-	fp::ForceEpochs,
-	rb::AbstractVector{ForceResponse},
-)
-	fp.n_epochs == length(rb) || throw(ArgumentError(
-		"Number of epochs and ForceResponse don't match!"))
-	return [impulse_size(f, b) for (f, b) in zip(eachrow(fp.dat), rb)]
-end
 
 # helper
 function _extract_response(

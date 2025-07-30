@@ -1,5 +1,5 @@
 
-function Makie.plot!(ax::Axis, fe::ForceEpochs;
+function Makie.plot!(ax::Axis, fe::BeForEpochs;
 	rows::row_ids = nothing,
 	ylims::UnitRange{Int} = -2000:2000,
 	colors::VecOrColorant = RGBAf(0.2, 0.6, 0.2, 0.5),
@@ -25,12 +25,12 @@ function Makie.plot!(ax::Axis, fe::ForceEpochs;
 		end
 	end
 
-	return _plot_force_matrix!(ax, force(fe); zero_sample = fe.zero_sample,
+	return _plot_force_matrix!(ax, fe.dat; zero_sample = fe.zero_sample,
 		ylims, colors, linewidth, marker, marker_color, marker_linewidth,
 		info_text, kwargs...)
 end
 
-function Makie.plot!(fig::Figure, fe::ForceEpochs; kwargs...)
+function Makie.plot!(fig::Figure, fe::BeForEpochs; kwargs...)
 	return plot!(Axis(fig[1, 1]), fe; kwargs...)
 end
 
@@ -38,7 +38,7 @@ function Makie.plot!(fig::Figure, epoch_mtx::Matrix; kwargs...)
 	return _plot_force_matrix!(Axis(fig[1, 1]), epoch_mtx; kwargs...)
 end
 
-function ForceAnalysis.plot_good_bad!(ax::Axis, fe::ForceEpochs;
+function ForceAnalysis.plot_good_bad!(ax::Axis, fe::BeForEpochs;
 	rows::row_ids = nothing,
 	ylims::UnitRange{Int} = -2000:2000,
 	good_trials::Union{Nothing, AbstractVector{Bool}} = nothing,
@@ -60,12 +60,12 @@ function ForceAnalysis.plot_good_bad!(ax::Axis, fe::ForceEpochs;
 	return ax
 end
 
-function ForceAnalysis.plot_good_bad!(fig::Figure, fe::ForceEpochs; kwargs...)
+function ForceAnalysis.plot_good_bad!(fig::Figure, fe::BeForEpochs; kwargs...)
 	return plot!(Axis(fig[1, 1]), fe; kwargs...)
 end
 
 
-function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::ForceEpochs;
+function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::BeForEpochs;
 	condition::Symbol = :all,
 	sd_err::Bool = true,
 	colors::Union{<:ColorGradient, Vector{<:Colorant}, Nothing} = nothing,
@@ -123,6 +123,6 @@ function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::ForceEpochs;
 	return ax
 end
 
-function ForceAnalysis.plot_av_epoch!(fig::Figure, fe::ForceEpochs; kwargs...)
+function ForceAnalysis.plot_av_epoch!(fig::Figure, fe::BeForEpochs; kwargs...)
 	return plot_av_epoch!(Axis(fig[1, 1]), fe; kwargs...)
 end

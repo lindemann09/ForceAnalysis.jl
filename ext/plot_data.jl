@@ -2,7 +2,7 @@ const VecOrColorant = Union{Colorant, Base.AbstractVecOrTuple{Colorant}}
 const row_ids = Union{Nothing, Integer, Base.AbstractVecOrTuple{Integer}}
 
 
-function _response_marker(fe::ForceEpochs, oc::OnsetCriterion;
+function _response_marker(fe::BeforEpochs, oc::OnsetCriterion;
 	mark_peak::Bool = true)
 	rtn = Int[]
 	responses = response_detection(fe, oc)
@@ -15,7 +15,8 @@ function _response_marker(fe::ForceEpochs, oc::OnsetCriterion;
 		end
 	end
 	if mark_peak
-		for (r, p) in zip(responses, peak_force(fe, responses))
+		peaks = [peak_force(vec, resp) for (vec, resp) in zip(eachrow(fe.dat), responses)]
+		for (r, p) in zip(responses, peaks)
 			if p.sample_to_peak >= 0
 				push!(rtn, p.sample_to_peak + r.onset - r.zero_sample)
 			end
