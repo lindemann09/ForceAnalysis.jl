@@ -1,9 +1,10 @@
 name = "ForceAnalysis"
 uuid = "253e1fb9-e260-4ab3-92cb-ad0757323424"
 authors = ["Oliver Lindemann"]
-version = "0.4.6b"
+version = "0.4.6-b"
 
 [deps]
+BeForData = "49581401-e3b0-43cb-bb9c-49750952130d"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
 CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
@@ -32,6 +33,7 @@ CSVFilesExt = ["CSV", "JSON", "ZipArchives"]
 ForceMakieExt = ["Colors", "Makie", "PlotUtils"]
 
 [compat]
+BeForData = "0.3.0"
 CSV = "0.10"
 CategoricalArrays = "0.10"
 CodecZlib = "0.7"
