@@ -1,8 +1,7 @@
 const VecOrColorant = Union{Colorant, Base.AbstractVecOrTuple{Colorant}}
 const row_ids = Union{Nothing, Integer, Base.AbstractVecOrTuple{Integer}}
 
-
-function _response_marker(fe::BeforEpochs, oc::OnsetCriterion;
+function _response_marker(fe::BeForEpochs, oc::OnsetCriterion;
 	mark_peak::Bool = true)
 	rtn = Int[]
 	responses = response_detection(fe, oc)
