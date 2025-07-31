@@ -1,12 +1,14 @@
 module ForceAnalysis
 
 using Reexport
-using UnPack
+
+using DSP # signal processing, filtering
 using DataFrames
 using CategoricalArrays: unique
 using Statistics
 
-@reexport using BeForData: BeForRecord, BeForEpochs
+@reexport using BeForData
+
 
 export
     # processing
@@ -15,7 +17,6 @@ export
     epoch_rejection,
     aggregate,
     subset,
-    concatenate,
     # response detection
     OnsetCriterion,
     ForceResponse,
@@ -39,14 +40,9 @@ export
 	plot_good_bad!,
 	highlight_ranges!
 
-
 include("stats.jl")
 include("processing.jl")
 include("response_detection.jl")
-
-
-include("old_force_data.jl")
-export ForceData # depricated
 
 ## extensions
 _makie_error() = throw(ArgumentError("Have you loaded an appropriate Makie backend?"))
@@ -57,5 +53,6 @@ plot_av_epoch!(::Any, ::BeForEpochs; kwargs...) = _makie_error()
 if !isdefined(Base, :get_extension)
     include("../ext/ForceMakieExt.jl")
 end
+
 
 end
