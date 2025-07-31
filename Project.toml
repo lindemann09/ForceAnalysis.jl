@@ -20,7 +20,7 @@ PlotUtils = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 ForceMakieExt = ["Colors", "Makie", "PlotUtils"]
 
 [compat]
-BeForData = "0.3"
+BeForData = "0.3.1"
 DSP = "0.8"
 DataFrames = "1.7"
 Reexport = "1.2.2"
