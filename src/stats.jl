@@ -15,7 +15,8 @@ function Statistics.mean(fe::BeForEpochs;
         bsl = mean(fe.baseline[rows, :])
     end
 
-    return BeForEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate;
+                        baseline = [bsl], zero_sample = fe.zero_sample)
 end
 
 """
@@ -39,7 +40,9 @@ function Statistics.median(fe::BeForEpochs;
             bsl = NaN
         end
     end
-    return BeForEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate;
+                        baseline = [bsl], zero_sample = fe.zero_sample)
+
 end
 
 """
@@ -57,7 +60,9 @@ function Statistics.var(fe::BeForEpochs;
         dat = var(fe.dat[rows, :], dims=1)
         bsl = var(fe.baseline[rows, :])
     end
-    return BeForEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate;
+                        baseline = [bsl], zero_sample = fe.zero_sample)
+
 end
 
 """
@@ -75,7 +80,8 @@ function Statistics.std(fe::BeForEpochs;
         dat = std(fe.dat[rows, :], dims=1)
         bsl = std(fe.baseline[rows, :])
     end
-    return BeForEpochs(dat, fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate;
+                        baseline = [bsl], zero_sample = fe.zero_sample)
 end
 
 
@@ -96,17 +102,18 @@ function sderr(fe::BeForEpochs;
         dat = std(fe.dat[rows, :], dims=1)
         bsl = std(fe.baseline[rows, :])
     end
-    return BeForEpochs(dat/sqrt(n), fe.sampling_rate, DataFrame(), [bsl], fe.zero_sample)
+    return BeForEpochs(dat/sqrt(n), fe.sampling_rate;
+                        baseline = [bsl], zero_sample = fe.zero_sample)
 end
 
 
 function Base.diff(fe::BeForEpochs; dims::Integer)
     mtx = fe.dat
     if dims == 1
-        z = zeros(T, 1, size(mtx, 2))
+        z = zeros(Float64, 1, size(mtx, 2))
         dat = vcat(z, diff(mtx; dims=1))
     elseif dims == 2
-        z = zeros(T, size(mtx, 1), 1)
+        z = zeros(Float64, size(mtx, 1), 1)
         dat = hcat(z, diff(mtx; dims=2))
     else
         throw(ArgumentError("dims has to be 1 or 2 and not $dims"))

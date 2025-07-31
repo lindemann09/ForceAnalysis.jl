@@ -1,8 +1,4 @@
 const ColumnIndex = Union{Symbol, AbstractString}
-# const MultiColumnIndex = Union{
-#     ColumnIndex, AbstractVector{<:ColumnIndex},Tuple{<:ColumnIndex}
-# }
-
 
 peak_differences(fe::BeForEpochs, window_size::Integer) = peak_differences(fe.dat, window_size)
 
@@ -71,11 +67,9 @@ function aggregate(
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
 	agg_fnc::Function = mean,
 )
-
 	# aggregate per subject
-	T = eltype(fe.dat)
-	agg_forces = Matrix{T}(undef, 0, size(fe.dat, 2))
-	agg_baseline = T[]
+	agg_forces = Matrix{Float64}(undef, 0, size(fe.dat, 2))
+	agg_baseline = Float64[]
 
 	if condition == :all
 		conditions = repeat([true], nrow(fe.design))
@@ -134,30 +128,4 @@ function DataFrames.subset(fe::BeForEpochs, args...)
 	df.row_xxx .= 1:nrow(df)
 	df = subset(df, args...)
 	return subset(fe, df[:, :row_xxx])
-end
-
-"""
-	concatenate(a::BeForEpochs, b::BeForEpochs)
-
-concatenate two or multiple BeForEpochs
-"""
-function concatenate(a::BeForEpochs, b::BeForEpochs)
-	a.sampling_rate == b.sampling_rate || throw(ArgumentError("Datasets have different sampling rates"))
-	a.zero_sample == b.zero_sample || throw(ArgumentError("Datasets have different zero samples"))
-	force = vcat(a.dat, b.dat)
-	design = vcat(a.design, b.design)
-	baseline = vcat(a.baseline, b.baseline)
-	return BeForEpochs(force, a.sampling_rate, design, baseline, a.zero_sample)
-end
-
-function concatenate(fes::Base.AbstractVecOrTuple{BeForEpochs})
-	if length(fes) < 1
-		return Nothing
-	else
-		rtn = popat!(fes, 1)
-		while length(fes) > 0
-			rtn = concatenate(rtn, popat!(fes, 1))
-		end
-		return rtn
-	end
 end
