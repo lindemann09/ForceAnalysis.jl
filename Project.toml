@@ -1,7 +1,7 @@
 name = "ForceAnalysis"
 uuid = "253e1fb9-e260-4ab3-92cb-ad0757323424"
 authors = ["Oliver Lindemann"]
-version = "0.4.7"
+version = "0.4.8"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -36,9 +36,9 @@ CSV = "0.10"
 CodecZlib = "0.7"
 Colors = "0.12"
 DSP = "0.7"
-DataFrames = "1.7"
+DataFrames = "1.6"
 FileIO = "1"
-JLD2 = "0.4"
+JLD2 = "0.4.51"
 JSON = "0.21"
 Makie = "0.19"
 PlotUtils = "1"
