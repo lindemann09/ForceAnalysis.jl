@@ -16,7 +16,6 @@ export
     epoch_rejection_ids,
     epoch_rejection,
     aggregate,
-    subset,
     # response detection
     OnsetCriterion,
     ForceResponse,

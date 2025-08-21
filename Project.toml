@@ -1,7 +1,7 @@
 name = "ForceAnalysis"
 uuid = "253e1fb9-e260-4ab3-92cb-ad0757323424"
 authors = ["Oliver Lindemann"]
-version = "0.5.3"
+version = "0.5.4"
 
 [deps]
 BeForData = "49581401-e3b0-43cb-bb9c-49750952130d"

@@ -108,24 +108,3 @@ function aggregate(
 	return BeForEpochs(
 		agg_forces, fe.sampling_rate, DataFrame(dsgn), agg_baseline, fe.zero_sample)
 end;
-
-
-"""
-	subset(fe::BeForEpochs, rows::Base.AbstractVecOrTuple{Integer})
-	subset(fe::BeForEpochs, args...)
-
-TODO
-"""
-function DataFrames.subset(fe::BeForEpochs, rows::Base.AbstractVecOrTuple{Integer})
-	force = fe.dat[rows, :]
-	bsln = fe.baseline[rows]
-	subset_design = fe.design[rows, :]
-	return BeForEpochs(force, fe.sampling_rate, subset_design, bsln, fe.zero_sample)
-end
-
-function DataFrames.subset(fe::BeForEpochs, args...)
-	df = copy(fe.design)
-	df.row_xxx .= 1:nrow(df)
-	df = subset(df, args...)
-	return subset(fe, df[:, :row_xxx])
-end
