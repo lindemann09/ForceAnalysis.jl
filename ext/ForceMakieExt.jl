@@ -12,6 +12,6 @@ export 	plot!,
 	highlight_ranges!
 
 include("plot_data.jl")
-include("epochs.jl")
+include("plot_epochs.jl")
 
 end # module

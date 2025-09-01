@@ -105,6 +105,8 @@ function aggregate(
 	end
 
 	delete!(dsgn, :all)
+	meta = copy(fe.meta)
+	meta["agg_fnc"] = string(agg_fnc)
 	return BeForEpochs(
-		agg_forces, fe.sampling_rate, DataFrame(dsgn), agg_baseline, fe.zero_sample)
+		agg_forces, fe.sampling_rate, DataFrame(dsgn), agg_baseline, fe.zero_sample, meta)
 end;
