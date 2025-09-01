@@ -42,7 +42,8 @@ function Statistics.median(fe::BeForEpochs;
         end
     end
     return BeForEpochs(dat, fe.sampling_rate;
-                        baseline = [bsl], zero_sample = fe.zero_sample, meta=copy(fe.meta))
+                        baseline = [bsl], zero_sample = fe.zero_sample,
+                        meta=copy(fe.meta))
 
 end
 
@@ -82,7 +83,9 @@ function Statistics.std(fe::BeForEpochs;
         bsl = std(fe.baseline[rows, :])
     end
     return BeForEpochs(dat, fe.sampling_rate;
-                        baseline = [bsl], zero_sample = fe.zero_sample, mean=copy(fe.meta))
+                        baseline = [bsl],
+                        zero_sample = fe.zero_sample,
+                        meta=copy(fe.meta))
 end
 
 
@@ -96,7 +99,7 @@ function sderr(fe::BeForEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
     n = isnothing(rows) ?  size(fe.dat, 1) : size(fe.dat[rows, :], 1)
     rtn = std(fe; rows=rows)
-    rtn.dat = rtn.dat / sqrt(n)
+    rtn.dat[:, :] = rtn.dat / sqrt(n)
     return rtn
 end
 
@@ -112,7 +115,8 @@ function Base.diff(fe::BeForEpochs; dims::Integer)
     else
         throw(ArgumentError("dims has to be 1 or 2 and not $dims"))
     end
-    return BeForEpochs(dat, fe.sampling_rate, fe.design, fe.baseline, fe.zero_sample, meta=copy(fe.meta))
+    return BeForEpochs(dat, fe.sampling_rate, fe.design, fe.baseline,
+            fe.zero_sample,  meta=copy(fe.meta))
 end;
 
 

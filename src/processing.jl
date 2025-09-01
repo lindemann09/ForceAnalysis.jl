@@ -54,60 +54,89 @@ function epoch_rejection(fe::BeForEpochs;
 	return subset(fe, good)
 end
 
+TOptionalRowSelect = Union{Nothing, BitVector, Vector{<:Integer}}
+function aggregate(fe::BeForEpochs,
+	agg_fnc::Function,
+	rows::TOptionalRowSelect,
+	design::Union{DataFrame, DataFrameRow})
+
+	if isnothing(rows)
+		dat = agg_fnc(fe.dat, dims = 1)
+		bsl = agg_fnc(fe.baseline)
+	else
+		dat = agg_fnc(fe.dat[rows, :], dims = 1)
+		bsl = agg_fnc(fe.baseline[rows, :])
+	end
+
+	if design isa DataFrameRow
+		design = DataFrame(design)
+	elseif nrow(design) > 1
+		throw(ArgumentError("Design has to be a DataFrame with one or no rows or DataFrameRow."))
+	end
+
+	meta = copy(fe.meta)
+	meta["agg_fnc"] = string(agg_fnc)
+	return BeForEpochs(dat, fe.sampling_rate;
+		baseline = [bsl],
+		zero_sample = fe.zero_sample,
+		design, meta)
+end
+
+aggregate(fe::BeForEpochs, agg_fnc::Function, rows::TOptionalRowSelect) = aggregate(fe, agg_fnc, rows, DataFrame())
+aggregate(fe::BeForEpochs, agg_fnc::Function, design::Union{DataFrame, DataFrameRow}) = aggregate(fe, agg_fnc, nothing, design)
 
 """
-	aggregate(fe::BeForEpochs; condition::ColumnIndex = :all,
-		subject_id::Union{Nothing, ColumnIndex} = nothing, agg_fnc::Function = mean)
+	aggregate(fe::BeForEpochs, agg_fnc::Function rows::Union{Nothing, BitVector, Vector{<:Integer}}, design::Union{DataFrame, DataFrameRow})
+	aggregate(fe::BeForEpochs, agg_fnc::Function, rows::Union{Nothing, BitVector, Vector{<:Integer}})
+	aggregate(fe::BeForEpochs, agg_fnc::Function, design::Union{DataFrame, DataFrameRow})
+	aggregate(fe::BeForEpochs, agg_fnc::Function;
+			condition::ColumnIndex = :all,
+			subject_id::Union{Nothing, ColumnIndex} = nothing)
 TODO
 """
 function aggregate(
-	# TODO generate methods with multiple IVs
-	fe::BeForEpochs;
-	condition::ColumnIndex = :all,
+	fe::BeForEpochs,
+	agg_fnc::Function;
+	condition::Union{Nothing, ColumnIndex} = :all, # condition column name
 	subject_id::Union{Nothing, ColumnIndex} = nothing,
-	agg_fnc::Function = mean,
 )
-	# aggregate per subject
-	agg_forces = Matrix{Float64}(undef, 0, size(fe.dat, 2))
-	agg_baseline = Float64[]
+	if isnothing(condition)
+		condition = :all
+	end
 
 	if condition == :all
-		conditions = repeat([true], nrow(fe.design))
+		if isnothing(subject_id)
+			return aggregate(fe, agg_fnc, nothing)
+		end
+		conditions = nothing
 	else
 		conditions = fe.design[:, condition]
 	end
-	Tiv = eltype(unique(conditions)) # unique require to deal with CategoricalArrays
-
+	rtn_array = BeForEpochs[]
+	# aggregate per subject
 	if isnothing(subject_id)
-		dsgn = Dict(condition => Tiv[])
 		for cond in unique(conditions)
-			push!(dsgn[condition], cond)
 			ids = findall(conditions .== cond)
-			agg_fe = agg_fnc(fe; rows = ids)
-			agg_forces = vcat(agg_forces, agg_fe.dat)
-			append!(agg_baseline, agg_fe.baseline)
-
+			design = DataFrame(condition => cond)
+			push!(rtn_array, aggregate(fe, agg_fnc, ids, design))
 		end
 	else
 		subject_ids = fe.design[:, subject_id]
-		Tsid = eltype(unique(subject_ids))
-		dsgn = Dict(condition => Tiv[], subject_id => Tsid[])
 		for sid in unique(subject_ids)
-			for cond in unique(conditions)
-				push!(dsgn[condition], cond)
-				push!(dsgn[subject_id], sid)
-				ids = findall(subject_ids .== sid .&& conditions .== cond)
-				agg_fe = agg_fnc(fe; rows = ids)
-				agg_forces = vcat(agg_forces, agg_fe.dat)
-				append!(agg_baseline, agg_fe.baseline)
+			subj_rows = subject_ids .== sid
+			if isnothing(conditions)
+				design = DataFrame(:subject_id => sid)
+				push!(rtn_array, aggregate(fe, agg_fnc, subj_rows, design))
+			else
+				for cond in unique(conditions)
+					design = DataFrame(:subject_id => sid, condition => cond)
+					ids = findall(subj_rows .&& conditions .== cond)
+					push!(rtn_array, aggregate(fe, agg_fnc, ids, design))
+				end
 			end
 		end
 	end
-
-	delete!(dsgn, :all)
-	meta = copy(fe.meta)
-	meta["agg_fnc"] = string(agg_fnc)
-	return BeForEpochs(
-		agg_forces, fe.sampling_rate; design= DataFrame(dsgn),
-		baseline= agg_baseline, zero_sample=fe.zero_sample, meta=meta)
+	rtn = reduce(vcat, rtn_array)
+	rtn.meta["agg_fnc"] = string(agg_fnc)
+	return rtn
 end;
