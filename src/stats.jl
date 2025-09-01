@@ -16,7 +16,8 @@ function Statistics.mean(fe::BeForEpochs;
     end
 
     return BeForEpochs(dat, fe.sampling_rate;
-                        baseline = [bsl], zero_sample = fe.zero_sample)
+                        baseline = [bsl],
+                        zero_sample = fe.zero_sample, meta = copy(fe.meta))
 end
 
 """
@@ -41,7 +42,7 @@ function Statistics.median(fe::BeForEpochs;
         end
     end
     return BeForEpochs(dat, fe.sampling_rate;
-                        baseline = [bsl], zero_sample = fe.zero_sample)
+                        baseline = [bsl], zero_sample = fe.zero_sample, meta=copy(fe.meta))
 
 end
 
@@ -61,7 +62,7 @@ function Statistics.var(fe::BeForEpochs;
         bsl = var(fe.baseline[rows, :])
     end
     return BeForEpochs(dat, fe.sampling_rate;
-                        baseline = [bsl], zero_sample = fe.zero_sample)
+                        baseline = [bsl], zero_sample = fe.zero_sample, meta=copy(fe.meta))
 
 end
 
@@ -81,7 +82,7 @@ function Statistics.std(fe::BeForEpochs;
         bsl = std(fe.baseline[rows, :])
     end
     return BeForEpochs(dat, fe.sampling_rate;
-                        baseline = [bsl], zero_sample = fe.zero_sample)
+                        baseline = [bsl], zero_sample = fe.zero_sample, mean=copy(fe.meta))
 end
 
 
@@ -93,17 +94,10 @@ deviations for each sample. If `rows` is defined, only the selected rows are con
 """
 function sderr(fe::BeForEpochs;
     rows::Union{Nothing, BitVector, Vector{<:Integer}}=nothing)
-    if isnothing(rows)
-        n = size(fe.dat, 1)
-        dat = std(fe.dat, dims=1)
-        bsl = std(fe.baseline)
-    else
-        n = size(fe.dat[rows, :], 1)
-        dat = std(fe.dat[rows, :], dims=1)
-        bsl = std(fe.baseline[rows, :])
-    end
-    return BeForEpochs(dat/sqrt(n), fe.sampling_rate;
-                        baseline = [bsl], zero_sample = fe.zero_sample)
+    n = isnothing(rows) ?  size(fe.dat, 1) : size(fe.dat[rows, :], 1)
+    rtn = std(fe; rows=rows)
+    rtn.dat = rtn.dat / sqrt(n)
+    return rtn
 end
 
 
@@ -118,7 +112,7 @@ function Base.diff(fe::BeForEpochs; dims::Integer)
     else
         throw(ArgumentError("dims has to be 1 or 2 and not $dims"))
     end
-    return BeForEpochs(dat, fe.sampling_rate, fe.design, fe.baseline, fe.zero_sample)
+    return BeForEpochs(dat, fe.sampling_rate, fe.design, fe.baseline, fe.zero_sample, meta=copy(fe.meta))
 end;
 
 

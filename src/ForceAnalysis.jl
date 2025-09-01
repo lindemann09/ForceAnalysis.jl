@@ -2,7 +2,6 @@ module ForceAnalysis
 
 using Reexport
 
-using DSP # signal processing, filtering
 using DataFrames
 using CategoricalArrays: unique
 using Statistics
