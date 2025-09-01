@@ -1,3 +1,6 @@
+function sderr(A::AbstractArray; dims=1)
+    return Statistics.std(A; dims=dims) / sqrt(size(A, dims))
+end
 
 function Makie.plot!(ax::Axis, fe::BeForEpochs;
 	rows::row_ids = nothing,
@@ -89,18 +92,18 @@ function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::BeForEpochs;
 	end
 
 	if 	condition == :all
-		agg_forces = aggregate(fe; agg_fnc = agg_fnc)
+		agg_forces = aggregate(fe, agg_fnc)
 		cond = [:all]
 		if sd_err
-			sd_forces = aggregate(fe; agg_fnc = sderr)
+			sd_forces = aggregate(fe, sderr)
 		else
 			sd_forces = nothing
 		end
  	else
-		agg_forces = aggregate(fe; condition, agg_fnc = agg_fnc)
+		agg_forces = aggregate(fe, agg_fnc; condition )
 		cond = agg_forces.design[:, condition]
 		if sd_err
-			sd_forces = aggregate(fe; condition, agg_fnc = sderr)
+			sd_forces = aggregate(fe, sderr; condition)
 		else
 			sd_forces = nothing
 		end

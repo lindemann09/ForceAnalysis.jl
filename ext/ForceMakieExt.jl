@@ -1,9 +1,9 @@
 module ForceMakieExt
 
+using Statistics
 using Makie
 using Colors
 using PlotUtils: ColorGradient
-
 using ForceAnalysis
 
 export 	plot!,

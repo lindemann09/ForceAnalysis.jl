@@ -74,10 +74,13 @@ function aggregate(fe::BeForEpochs,
 		throw(ArgumentError("Design has to be a DataFrame with one or no rows or DataFrameRow."))
 	end
 
+	if !(bsl isa Vector)
+		bsl = [bsl]
+	end
 	meta = copy(fe.meta)
 	meta["agg_fnc"] = string(agg_fnc)
 	return BeForEpochs(dat, fe.sampling_rate;
-		baseline = [bsl],
+		baseline = bsl,
 		zero_sample = fe.zero_sample,
 		design, meta)
 end

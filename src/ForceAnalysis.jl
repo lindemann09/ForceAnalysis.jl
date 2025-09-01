@@ -4,7 +4,6 @@ using Reexport
 
 using DataFrames
 using CategoricalArrays: unique
-using Statistics
 
 @reexport using BeForData
 
@@ -26,11 +25,6 @@ export
     # force statistics
     minimum,
     maximum,
-    mean,
-    std,
-    var,
-    sderr,
-    median,
     diff,
     # plotting
     highlight_ranges!,
