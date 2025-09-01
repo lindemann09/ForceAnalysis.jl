@@ -14,6 +14,9 @@ export
     epoch_rejection_ids,
     epoch_rejection,
     aggregate,
+    minimum,
+    maximum,
+    diff,
     # response detection
     OnsetCriterion,
     ForceResponse,
@@ -22,17 +25,12 @@ export
     impulse_size,
     duration,
     latency,
-    # force statistics
-    minimum,
-    maximum,
-    diff,
     # plotting
     highlight_ranges!,
     plot_av_epoch!,
 	plot_good_bad!,
 	highlight_ranges!
 
-include("stats.jl")
 include("processing.jl")
 include("response_detection.jl")
 
