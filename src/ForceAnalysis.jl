@@ -7,7 +7,6 @@ using CategoricalArrays: unique
 
 @reexport using BeForData
 
-
 export
     # processing
     peak_differences,

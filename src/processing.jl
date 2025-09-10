@@ -120,6 +120,7 @@ function aggregate(
 		conditions = fe.design[:, condition]
 	end
 	rtn_array = BeForEpochs[]
+	
 	# aggregate per subject
 	if isnothing(subject_id)
 		for cond in unique(conditions)

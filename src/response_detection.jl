@@ -25,7 +25,9 @@ struct ForceResponse
 	offset::Union{Missing, Int}
 	sampling_rate:: Real
 	zero_sample::Int
+
 	function ForceResponse(a::Union{Missing, Int}, b::Union{Missing, Int}, c::Float64, d::Int)
+		(c > 0) || throw(ArgumentError("Sampling rate must be positive."))
 		if !ismissing(a) && !ismissing(b) && a > b
 			throw(ArgumentError("Onset must be before offset."))
 		end
