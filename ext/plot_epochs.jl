@@ -78,6 +78,7 @@ function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::BeForEpochs;
 	marker_color::Colorant = RGBAf(0.2, 0.2, 0.2, 0.9),
 	highlight_ranges::Union{Nothing, Vector{UnitRange}} = nothing,
 	highlight_color::Colorant = RGBAf(0.1, 0.9, 0.1, 0.3),
+	sd_err_color_transparency::Real = 0.2,
 	conditions_order::Union{Nothing, Vector{Symbol}, Vector{String}, Vector{Real}} = nothing)
 	# conditions is a variable with the conditions
 	# has to have the same number of elemens as rows in froce
@@ -125,7 +126,7 @@ function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::BeForEpochs;
 
 		if !isnothing(sd_forces)
 			err = vec(sd_forces.dat[iv_var.==c, :])
-			band!(xs, val + err, val - err, color = (cols[i], 0.2))
+			band!(xs, val + err, val - err, color = (cols[i], sd_err_color_transparency))
 		end
 	end
 	return ax
