@@ -1,6 +1,6 @@
 name = "ForceAnalysis"
 uuid = "253e1fb9-e260-4ab3-92cb-ad0757323424"
-version = "0.5.8-dev"
+version = "0.5.8"
 authors = ["Oliver Lindemann"]
 
 [deps]
@@ -16,7 +16,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [sources]
-BeForData = {rev = "v0.3.7", url = "https://github.com/lindemann09/BeForData.jl"}
+BeForData = {rev = "main", url = "https://github.com/lindemann09/BeForData.jl"}
 
 [extensions]
 ForceMakieExt = ["Makie"]
