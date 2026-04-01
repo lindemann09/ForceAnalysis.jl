@@ -37,7 +37,7 @@ function Makie.plot!(fig::Figure, fe::BeForEpochs; kwargs...)
 	return plot!(Axis(fig[1, 1]), fe; kwargs...)
 end
 
-function Makie.plot!(fig::Figure, epoch_mtx::Matrix; kwargs...)
+function Makie.plot!(fig::Figure, epoch_mtx::Union{Matrix, DimArray}; kwargs...)
 	return _plot_force_matrix!(Axis(fig[1, 1]), epoch_mtx; kwargs...)
 end
 

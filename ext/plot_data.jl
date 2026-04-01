@@ -36,7 +36,7 @@ function _plot_force_matrix!(ax::Axis,
 	info_text::AbstractString = "",
 	kwargs...,
 )
-	#epoch_lines
+	# epoch_lines
 	xs = (1-zero_sample):(size(force_mtx, 2)-zero_sample)
 	if colors isa Colorant
 		colors = Iterators.cycle((colors,))

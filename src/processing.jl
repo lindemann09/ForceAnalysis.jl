@@ -2,8 +2,7 @@ const ColumnIndex = Union{Symbol, AbstractString}
 const TOptionalRowSelect = Union{Nothing, BitVector, Vector{<:Integer}}
 
 peak_differences(fe::BeForEpochs, window_size::Integer) = peak_differences(fe.dat, window_size)
-
-function peak_differences(force_mtx::Matrix{T}, window_size::Integer) where T <: AbstractFloat
+function peak_differences(force_mtx::Union{Matrix{T}, DimArray{T, 2}}, window_size::Integer) where T <: AbstractFloat
 	# peak difference per row
 	nc = size(force_mtx, 2)
 	rtn = T[]
@@ -66,7 +65,7 @@ function aggregate(fe::BeForEpochs,
 	else
 		dat = agg_fnc(fe.dat[rows, :], dims = 1)
 		bsl = agg_fnc(fe.baseline[rows, :])
-		if bsl isa Matrix
+		if bsl isa Matrix || bsl isa DimArray
 			bsl = first(bsl)
 		end
 	end
@@ -120,7 +119,7 @@ function aggregate(
 		conditions = fe.design[:, condition]
 	end
 	rtn_array = BeForEpochs[]
-	
+
 	# aggregate per subject
 	if isnothing(subject_id)
 		for cond in unique(conditions)
@@ -160,8 +159,8 @@ function Base.diff(fe::BeForEpochs; dims::Integer)
     else
         throw(ArgumentError("dims has to be 1 or 2 and not $dims"))
     end
-    return BeForEpochs(dat, fe.sampling_rate, fe.design, fe.baseline,
-            fe.zero_sample,  copy(fe.meta))
+    return BeForEpochs(dat, fe.sampling_rate; design=fe.design, baseline=fe.baseline,
+            zero_sample=fe.zero_sample,  meta=copy(fe.meta))
 end;
 
 
@@ -175,6 +174,6 @@ Base.minimum(fe::BeForEpochs) = return vec(minimum(fe.dat, dims=2))
 """
     maximum(fe:BeForEpochs)
 
-Minimum of each epoch.
+Maximum of each epoch.
 """
 Base.maximum(fe::BeForEpochs) = return vec(maximum(fe.dat, dims=2))

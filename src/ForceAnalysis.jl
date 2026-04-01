@@ -3,6 +3,7 @@ module ForceAnalysis
 using Reexport
 
 using DataFrames
+using DimArrays
 using CategoricalArrays: unique
 
 @reexport using BeForData
