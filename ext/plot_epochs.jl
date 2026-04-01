@@ -69,7 +69,7 @@ end
 
 
 function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::BeForEpochs;
-	condition::Symbol = :all,
+	iv::Symbol = :all,
 	sd_err::Bool = true,
 	colors::Union{<:ColorGradient, Vector{<:Colorant}, Nothing} = nothing,
 	agg_fnc::Function = mean,
@@ -77,8 +77,9 @@ function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::BeForEpochs;
 	marker = Int64[],
 	marker_color::Colorant = RGBAf(0.2, 0.2, 0.2, 0.9),
 	highlight_ranges::Union{Nothing, Vector{UnitRange}} = nothing,
-	highlight_color::Colorant = RGBAf(0.1, 0.9, 0.1, 0.3)
-)
+	highlight_color::Colorant = RGBAf(0.1, 0.9, 0.1, 0.3),
+	sd_err_color_transparency::Real = 0.2,
+	conditions_order::Union{Nothing, Vector{Symbol}, Vector{String}, Vector{Real}} = nothing)
 	# conditions is a variable with the conditions
 	# has to have the same number of elemens as rows in froce
 
@@ -91,36 +92,41 @@ function ForceAnalysis.plot_av_epoch!(ax::Axis, fe::BeForEpochs;
 		highlight_ranges!(ax, highlight_ranges, highlight_color)
 	end
 
-	if 	condition == :all
+	if 	iv == :all
 		agg_forces = aggregate(fe, agg_fnc)
-		cond = [:all]
+		iv_var = [:all]
 		if sd_err
 			sd_forces = aggregate(fe, sderr)
 		else
 			sd_forces = nothing
 		end
  	else
-		agg_forces = aggregate(fe, agg_fnc; condition )
-		cond = agg_forces.design[:, condition]
+		agg_forces = aggregate(fe, agg_fnc; condition=iv )
+		iv_var = agg_forces.design[:, iv]
 		if sd_err
-			sd_forces = aggregate(fe, sderr; condition)
+			sd_forces = aggregate(fe, sderr; condition=iv)
 		else
 			sd_forces = nothing
 		end
 	end
 
 	if isnothing(colors)
-		cols = cgrad(:roma, length(cond), categorical = true, rev=true)
+		cols = cgrad(:roma, length(iv_var), categorical = true, rev=true)
 	else
 		cols = colors
 	end
-	for (i, c) in enumerate(sort(cond))
-		val = vec(agg_forces.dat[cond.==c, :])
+
+	if isnothing(conditions_order)
+		conditions_order = sort(iv_var)
+	end
+
+	for (i, c) in enumerate(conditions_order)
+		val = vec(agg_forces.dat[iv_var.==c, :])
 		lines!(xs, val; label = string(c), linewidth , color = cols[i])
 
 		if !isnothing(sd_forces)
-			err = vec(sd_forces.dat[cond.==c, :])
-			band!(xs, val + err, val - err, color = (cols[i], 0.2))
+			err = vec(sd_forces.dat[iv_var.==c, :])
+			band!(xs, val + err, val - err, color = (cols[i], sd_err_color_transparency))
 		end
 	end
 	return ax
