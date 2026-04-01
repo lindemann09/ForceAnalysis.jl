@@ -25,7 +25,7 @@ function _response_marker(fe::BeForEpochs, oc::OnsetCriterion;
 end
 
 function _plot_force_matrix!(ax::Axis,
-	force_mtx::Matrix{<:AbstractFloat};
+	force_mtx::AbstractMatrix{<:AbstractFloat};
 	zero_sample::Integer = 0,
 	ylims::UnitRange{Int} = -2000:2000,
 	colors::VecOrColorant = RGBAf(0.2, 0.6, 0.2, 0.5),

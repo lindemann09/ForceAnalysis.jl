@@ -4,7 +4,6 @@ using Statistics
 using Makie
 using Colors
 using PlotUtils: ColorGradient
-using DimArrays
 using ForceAnalysis
 
 export 	plot!,
