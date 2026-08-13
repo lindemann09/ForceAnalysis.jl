@@ -8,14 +8,6 @@ using CategoricalArrays: unique
 @reexport using BeForData
 
 export
-    # processing
-    peak_differences,
-    epoch_rejection_ids,
-    epoch_rejection,
-    aggregate,
-    minimum,
-    maximum,
-    diff,
     # response detection
     OnsetCriterion,
     ForceResponse,
@@ -30,7 +22,6 @@ export
 	plot_good_bad!,
 	highlight_ranges!
 
-include("processing.jl")
 include("response_detection.jl")
 
 ## extensions
