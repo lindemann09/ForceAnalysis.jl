@@ -1,6 +1,6 @@
 name = "ForceAnalysis"
 uuid = "253e1fb9-e260-4ab3-92cb-ad0757323424"
-version = "0.6.0-dev2"
+version = "0.6.0-dev3"
 authors = ["Oliver Lindemann"]
 
 [deps]
