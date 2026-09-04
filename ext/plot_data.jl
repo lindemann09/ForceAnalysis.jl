@@ -42,7 +42,7 @@ function _plot_force_matrix!(ax::Axis,
 		colors = Iterators.cycle((colors,))
 	end
 	for (i, color) in zip(1:size(force_mtx, 1), colors)
-		lines!(xs, force_mtx[i, :]; color, linewidth, kwargs...)
+		lines!(xs, collect(force_mtx[i, :]); color, linewidth, kwargs...)
 	end
 
 	if !isnothing(marker)
