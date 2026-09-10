@@ -44,7 +44,6 @@ function _plot_force_matrix!(ax::Axis,
 	for (i, color) in zip(1:size(force_mtx, 1), colors)
 		lines!(xs, collect(force_mtx[i, :]); color, linewidth, kwargs...)
 	end
-
 	if !isnothing(marker)
 		# write marker
 		vlines!(ax, marker; linewidth = marker_linewidth, color = marker_color)
@@ -67,4 +66,7 @@ function ForceAnalysis.highlight_ranges!(ax::Axis, ranges::Base.AbstractVecOrTup
 end
 
 ForceAnalysis.highlight_ranges!(ax::Axis, ranges::UnitRange, color::Any) = highlight_ranges!(ax, (ranges, ), color)
+
+
+
 
